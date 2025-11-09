@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ForgeEd</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <h2>ForgeEd</h2>
+                <p>AI-Enhanced LMS</p>
+            </div>
+            
+            <div class="sidebar-nav">
+                <a href="/dashboard" class="nav-item active">
+                    <span>🏠</span> Dashboard
+                </a>
+                <a href="/courses" class="nav-item">
+                    <span>📚</span> My Courses
+                </a>
+                <a href="/quiz" class="nav-item">
+                    <span>✍️</span> Daily Quiz
+                </a>
+                <a href="/slu-gpt" class="nav-item">
+                    <span>🤖</span> SLU GPT
+                </a>
+                <a href="#" class="nav-item">
+                    <span>📈</span> My Progress
+                </a>
+                <a href="#" class="nav-item">
+                    <span>📅</span> Schedule
+                </a>
+                <a href="#" class="nav-item">
+                    <span>👤</span> Profile
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+        </nav>
+        
+        <main class="main-content">
+            <div class="welcome-banner">
+                <h2>Welcome back, {{ student['first_name'] }}! 👋</h2>
+                <p>Here's what's happening with your studies today</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <div class="stat-value">{{ enrolled_count }}</div>
+                    <div class="stat-label">Enrolled Courses</div>
+                    <span class="stat-badge">Active</span>
+                </div>
+                
+                <div class="stat-card green">
+                    <div class="stat-value">{{ "%.2f"|format(student['gpa']) }}</div>
+                    <div class="stat-label">Current GPA</div>
+                </div>
+                
+                <div class="stat-card purple">
+                    <div class="stat-value">{{ student['completion_rate'] }}%</div>
+                    <div class="stat-label">Completion Rate</div>
+                </div>
+                
+                <div class="stat-card orange">
+                    <div class="stat-value">{{ student['slu_gpt_sessions'] }}</div>
+                    <div class="stat-label">SLU GPT Sessions</div>
+                </div>
+            </div>
+            
+            <div class="insights-section">
+                <h3>AI-Powered Insights</h3>
+                
+                {% for insight in insights %}
+                <div class="insight-card {{ insight.type }}">
+                    {{ insight.text }}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="insights-section">
+                <h3>Upcoming Classes</h3>
+                
+                {% for course in upcoming_classes %}
+                <div class="course-card" style="margin-bottom: 16px;">
+                    <div class="course-header">
+                        <div class="course-icon">📖</div>
+                        <div class="course-info">
+                            <h3>{{ course['course_name'] }}</h3>
+                            <p class="course-code">{{ course['instructor'] }}</p>
+                        </div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ course['progress'] }}%"></div>
+                    </div>
+                    <p class="progress-text">{{ course['progress'] }}% complete</p>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>

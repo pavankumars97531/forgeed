@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Courses - ForgeEd</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <h2>ForgeEd</h2>
+                <p>AI-Enhanced LMS</p>
+            </div>
+            
+            <div class="sidebar-nav">
+                <a href="/dashboard" class="nav-item">
+                    <span>🏠</span> Dashboard
+                </a>
+                <a href="/courses" class="nav-item active">
+                    <span>📚</span> My Courses
+                </a>
+                <a href="/quiz" class="nav-item">
+                    <span>✍️</span> Daily Quiz
+                </a>
+                <a href="/slu-gpt" class="nav-item">
+                    <span>🤖</span> SLU GPT
+                </a>
+                <a href="#" class="nav-item">
+                    <span>📈</span> My Progress
+                </a>
+                <a href="#" class="nav-item">
+                    <span>📅</span> Schedule
+                </a>
+                <a href="#" class="nav-item">
+                    <span>👤</span> Profile
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+        </nav>
+        
+        <main class="main-content">
+            <div class="page-header">
+                <h1>My Courses</h1>
+                <p>Manage and track your enrolled courses</p>
+            </div>
+            
+            <h3 style="margin-bottom: 20px; font-size: 20px;">Enrolled Courses</h3>
+            <div class="courses-grid">
+                {% for course in enrolled_courses %}
+                <div class="course-card">
+                    <div class="course-header">
+                        <div class="course-icon">📖</div>
+                        <div class="course-info">
+                            <h3>{{ course['course_name'] }}</h3>
+                            <p class="course-code">{{ course['course_code'] }}</p>
+                        </div>
+                        <div class="course-grade">{{ course['grade'] }}</div>
+                    </div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ course['progress'] }}%"></div>
+                    </div>
+                    <p class="progress-text">{{ course['progress'] }}% complete</p>
+                    
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-between; font-size: 13px; color: #666;">
+                        <span>✅ {{ course['modules_completed'] }} Modules</span>
+                        <span>📝 {{ course['pending_assignments'] }} Assignments</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if recommended_courses %}
+            <div class="recommended-section">
+                <h3>AI Recommended Courses for Next Semester</h3>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">Based on your career goal and current progress</p>
+                
+                <div class="courses-grid">
+                    {% for course in recommended_courses %}
+                    <div class="course-card" style="border: 2px solid #4a5fc1;">
+                        <div class="course-header">
+                            <div class="course-icon" style="background: linear-gradient(135deg, #7c88f0 0%, #a4aef5 100%);">✨</div>
+                            <div class="course-info">
+                                <h3>{{ course['course_name'] }}</h3>
+                                <p class="course-code">{{ course['course_code'] }} • {{ course['credits'] }} Credits</p>
+                            </div>
+                        </div>
+                        
+                        <p style="font-size: 14px; color: #666; margin-top: 12px;">{{ course['description'] }}</p>
+                        
+                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e0e0e0; font-size: 13px; color: #666;">
+                            <span>📅 {{ course['semester'] }}</span>
+                            {% if course['prerequisites'] and course['prerequisites'] != 'None' %}
+                            <br><span style="margin-top: 8px; display: block;">Prerequisites: {{ course['prerequisites'] }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</body>
+</html>

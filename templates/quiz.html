@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Quiz - ForgeEd</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <h2>ForgeEd</h2>
+                <p>AI-Enhanced LMS</p>
+            </div>
+            
+            <div class="sidebar-nav">
+                <a href="/dashboard" class="nav-item">
+                    <span>🏠</span> Dashboard
+                </a>
+                <a href="/courses" class="nav-item">
+                    <span>📚</span> My Courses
+                </a>
+                <a href="/quiz" class="nav-item active">
+                    <span>✍️</span> Daily Quiz
+                </a>
+                <a href="/slu-gpt" class="nav-item">
+                    <span>🤖</span> SLU GPT
+                </a>
+                <a href="#" class="nav-item">
+                    <span>📈</span> My Progress
+                </a>
+                <a href="#" class="nav-item">
+                    <span>📅</span> Schedule
+                </a>
+                <a href="#" class="nav-item">
+                    <span>👤</span> Profile
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+        </nav>
+        
+        <main class="main-content">
+            <div class="quiz-container">
+                <div class="quiz-header">
+                    <div class="quiz-info">
+                        <h2>Your Personalized Quiz for Today</h2>
+                        <p>10 AI-generated questions based on your courses • Test your knowledge!</p>
+                    </div>
+                    <button class="btn-start" onclick="startQuiz()">Start Quiz →</button>
+                </div>
+                
+                <div id="quizContent"></div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        let quizData = null;
+        let userAnswers = [];
+        
+        async function startQuiz() {
+            document.getElementById('quizContent').innerHTML = '<div class="loading">Loading your personalized quiz...</div>';
+            
+            try {
+                const response = await fetch('/api/generate-quiz', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.completed) {
+                    showScore(data.score, data.quiz.questions.length);
+                    return;
+                }
+                
+                quizData = data.quiz;
+                userAnswers = new Array(quizData.questions.length).fill(null);
+                renderQuiz();
+            } catch (error) {
+                document.getElementById('quizContent').innerHTML = '<div class="loading">Error loading quiz. Please try again.</div>';
+            }
+        }
+        
+        function renderQuiz() {
+            let html = '';
+            
+            quizData.questions.forEach((q, index) => {
+                html += `
+                    <div class="question-card">
+                        <div class="question-number">Question ${index + 1} of ${quizData.questions.length}</div>
+                        <div class="question-text">${q.question}</div>
+                        <div class="options">
+                            ${q.options.map((option, optIndex) => `
+                                <label class="option">
+                                    <input type="radio" name="q${index}" value="${optIndex}" onchange="saveAnswer(${index}, ${optIndex})">
+                                    ${option}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '<button class="btn-submit-quiz" onclick="submitQuiz()">Submit Quiz</button>';
+            
+            document.getElementById('quizContent').innerHTML = html;
+        }
+        
+        function saveAnswer(questionIndex, answerIndex) {
+            userAnswers[questionIndex] = answerIndex;
+        }
+        
+        async function submitQuiz() {
+            if (userAnswers.includes(null)) {
+                alert('Please answer all questions before submitting.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/submit-quiz', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ answers: userAnswers })
+                });
+                
+                const data = await response.json();
+                showScore(data.score, data.total);
+            } catch (error) {
+                alert('Error submitting quiz. Please try again.');
+            }
+        }
+        
+        function showScore(score, total) {
+            const percentage = Math.round((score / total) * 100);
+            let message = '';
+            
+            if (percentage >= 80) {
+                message = 'Excellent work! You have a strong understanding of the material.';
+            } else if (percentage >= 60) {
+                message = 'Good effort! Keep studying to improve your understanding.';
+            } else {
+                message = 'Keep practicing! Consider reviewing the course materials.';
+            }
+            
+            document.getElementById('quizContent').innerHTML = `
+                <div class="score-display">
+                    <h2>Quiz Complete!</h2>
+                    <div class="score-value">${score}/${total}</div>
+                    <p style="font-size: 18px; color: #666;">${percentage}% Correct</p>
+                    <p style="margin-top: 16px; color: #666;">${message}</p>
+                    <button class="btn-start" style="margin-top: 32px;" onclick="location.reload()">Try Again Tomorrow</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

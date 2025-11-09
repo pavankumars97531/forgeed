@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeEd - Student Portal Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-left">
+            <div class="logo">
+                <div class="logo-icon">🎓</div>
+                <div>
+                    <h1>ForgeEd</h1>
+                    <p>AI-Enhanced Learning Management System</p>
+                </div>
+            </div>
+            
+            <div class="hero-content">
+                <h2>Transform Your Educational Journey with AI</h2>
+                <p>Experience personalized learning powered by artificial intelligence. Get real-time insights, predictive analytics, and 24/7 AI tutoring support.</p>
+                
+                <div class="features">
+                    <div class="feature-card">
+                        <h3>🤖 AI-Powered Tutoring</h3>
+                        <p>24/7 personalized support with SLU GPT</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>📊 Predictive Analytics</h3>
+                        <p>Track and predict your academic success</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>👥 Personalized Learning</h3>
+                        <p>Tailored recommendations for your goals</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>💼 Industry Ready</h3>
+                        <p>Graduate with practical AI experience</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="login-right">
+            <div class="login-form">
+                <h2>Student Portal Login</h2>
+                <p>Access your personalized learning dashboard</p>
+                
+                {% if error %}
+                <div class="error-message">{{ error }}</div>
+                {% endif %}
+                
+                <form method="POST" action="/login">
+                    <div class="form-group">
+                        <label>University Email</label>
+                        <input type="email" name="email" placeholder="ullasgowda@slu.edu" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-link">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn-login">Sign In →</button>
+                </form>
+                
+                <div class="demo-note">
+                    <strong>Demo credentials are pre-filled</strong><br>
+                    Click 'Sign In' to explore the platform
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
