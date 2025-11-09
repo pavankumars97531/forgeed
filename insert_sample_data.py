@@ -3,6 +3,16 @@ import sqlite3
 conn = sqlite3.connect('forgeed.db')
 cursor = conn.cursor()
 
+print("Clearing existing data...")
+cursor.execute('DELETE FROM chat_history')
+cursor.execute('DELETE FROM quiz_history')
+cursor.execute('DELETE FROM enrolled_courses')
+cursor.execute('DELETE FROM available_courses')
+cursor.execute('DELETE FROM courses')
+cursor.execute('DELETE FROM students')
+
+print("Inserting sample data...")
+
 cursor.execute('''
     INSERT INTO students (email, password, first_name, last_name, gpa, completion_rate, slu_gpt_sessions, career_goal) 
     VALUES ('ullasgowda@slu.edu', 'password123', 'Ullas', 'Gowda', 3.85, 89, 47, 'Data Scientist specializing in Machine Learning and AI')
