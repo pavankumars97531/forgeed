@@ -4,11 +4,20 @@ import os
 from datetime import datetime, date
 import json
 from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SESSION_SECRET', 'dev-secret-key-change-in-production')
 
-client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+api_key = os.environ.get('OPENAI_API_KEY')
+if not api_key:
+    print("WARNING: OPENAI_API_KEY not set. AI features will not work.")
+    print("Please set your OpenAI API key as an environment variable.")
+    client = None
+else:
+    client = OpenAI(api_key=api_key)
 
 init_db()
 
