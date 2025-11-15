@@ -64,24 +64,46 @@ def dashboard():
         (student_id,)
     ).fetchone()['count']
     
-    enrolled_courses = conn.execute('''
-        SELECT c.course_name, c.instructor, ec.progress 
-        FROM enrolled_courses ec
-        JOIN courses c ON ec.course_id = c.id
-        WHERE ec.student_id = ?
-        ORDER BY ec.enrolled_at DESC
-        LIMIT 3
-    ''', (student_id,)).fetchall()
+    # Calculate Career Ready percentage based on roadmap completion
+    created_at = datetime.fromisoformat(student['created_at'])
+    current_day = min((datetime.now() - created_at).days + 1, 90)
+    career_ready_percentage = int((current_day / 90) * 100)
+    
+    # Get recent wellbeing score
+    recent_wellbeing = conn.execute('''
+        SELECT total_score FROM wellbeing_assessments 
+        WHERE student_id = ? 
+        ORDER BY created_at DESC 
+        LIMIT 1
+    ''', (student_id,)).fetchone()
+    wellbeing_score = recent_wellbeing['total_score'] if recent_wellbeing else 0
+    
+    # Check if quizzes taken today
+    today = datetime.now().strftime('%Y-%m-%d')
+    career_quiz_today = conn.execute('''
+        SELECT * FROM career_quiz_history 
+        WHERE student_id = ? AND quiz_date = ? AND completed = 1
+        ORDER BY created_at DESC LIMIT 1
+    ''', (student_id, today)).fetchone()
+    
+    academic_quiz_today = conn.execute('''
+        SELECT * FROM academic_quiz_history 
+        WHERE student_id = ? AND quiz_date = ? AND completed = 1
+        ORDER BY created_at DESC LIMIT 1
+    ''', (student_id, today)).fetchone()
     
     conn.close()
     
-    insights = generate_ai_insights(student_id)
+    insights = generate_dashboard_insights(student_id, student['gpa'], career_ready_percentage, wellbeing_score)
     
     return render_template('dashboard.html', 
                          student=student,
                          enrolled_count=enrolled_count,
+                         career_ready_percentage=career_ready_percentage,
+                         wellbeing_score=wellbeing_score,
                          insights=insights,
-                         upcoming_classes=enrolled_courses)
+                         career_quiz_today=career_quiz_today,
+                         academic_quiz_today=academic_quiz_today)
 
 @app.route('/courses')
 def courses():
@@ -205,7 +227,28 @@ def quiz():
     if 'student_id' not in session:
         return redirect(url_for('index'))
     
-    return render_template('quiz.html')
+    student_id = session['student_id']
+    conn = get_db()
+    
+    # Check if quizzes taken today
+    today = datetime.now().strftime('%Y-%m-%d')
+    career_quiz_today = conn.execute('''
+        SELECT * FROM career_quiz_history 
+        WHERE student_id = ? AND quiz_date = ? AND completed = 1
+        ORDER BY created_at DESC LIMIT 1
+    ''', (student_id, today)).fetchone()
+    
+    academic_quiz_today = conn.execute('''
+        SELECT * FROM academic_quiz_history 
+        WHERE student_id = ? AND quiz_date = ? AND completed = 1
+        ORDER BY created_at DESC LIMIT 1
+    ''', (student_id, today)).fetchone()
+    
+    conn.close()
+    
+    return render_template('quiz.html', 
+                         career_quiz_today=career_quiz_today,
+                         academic_quiz_today=academic_quiz_today)
 
 @app.route('/api/generate-quiz', methods=['POST'])
 def generate_quiz():
@@ -342,38 +385,27 @@ def submit_quiz():
     
     return jsonify({'score': score, 'total': len(quiz_data['questions'])})
 
-def generate_ai_insights(student_id):
-    conn = get_db()
-    student = conn.execute('SELECT * FROM students WHERE id = ?', (student_id,)).fetchone()
-    
-    enrolled_courses = conn.execute('''
-        SELECT c.course_name, ec.progress, ec.grade
-        FROM enrolled_courses ec
-        JOIN courses c ON ec.course_id = c.id
-        WHERE ec.student_id = ?
-    ''', (student_id,)).fetchall()
-    
-    conn.close()
-    
+def generate_dashboard_insights(student_id, gpa, career_ready_percentage, wellbeing_score):
+    """Generate personalized AI insights based on current scores"""
     if not client:
         return [
-            {"type": "success", "text": "Great progress! Your performance in Machine Learning has improved by 15% this month."},
-            {"type": "warning", "text": "You might need extra support in Statistical Methods. Consider scheduling a tutoring session."},
-            {"type": "info", "text": "Based on your interests, we recommend taking 'Deep Learning Fundamentals' next semester."}
+            {"type": "success", "text": "Great progress! Keep up the excellent work on your career learning path."},
+            {"type": "warning", "text": "Consider taking a break to maintain your wellbeing balance."},
+            {"type": "info", "text": "You're on track to achieve your career goals. Stay consistent!"}
         ]
     
-    courses_info = ', '.join([f"{c['course_name']} ({c['progress']}% complete, Grade: {c['grade']})" 
-                              for c in enrolled_courses])
-    
-    prompt = f"""Generate 3 brief AI-powered insights for a student with:
-GPA: {student['gpa']}
-Completion Rate: {student['completion_rate']}%
-Courses: {courses_info}
-Career Goal: {student['career_goal']}
+    prompt = f"""Generate 3 brief, personalized insights for a student with these metrics:
+- GPA: {gpa:.2f}/4.0
+- Career Ready: {career_ready_percentage}% (90-day learning roadmap progress)
+- Recent Wellbeing Score: {wellbeing_score}/100
 
-Provide 3 specific, actionable insights (one positive, one suggestion, one recommendation).
-Format as JSON array of objects with 'type' (success/warning/info) and 'text' fields.
-Keep each insight under 100 characters."""
+Provide 3 specific, actionable insights based on these scores:
+1. One celebrating their strengths (type: success)
+2. One suggesting improvement areas (type: warning) 
+3. One with motivational advice (type: info)
+
+Format as JSON array of objects with 'type' and 'text' fields.
+Keep each insight under 120 characters."""
 
     try:
         response = client.chat.completions.create(
@@ -896,9 +928,9 @@ Provide brief feedback (2-3 sentences) on what they should review and how to imp
     
     conn.execute('''
         UPDATE career_quiz_history 
-        SET answers = ?, score = ?, ai_feedback = ?, completed = 1
+        SET answers = ?, score = ?, total_questions = ?, ai_feedback = ?, completed = 1
         WHERE id = ?
-    ''', (json.dumps(answers), score, ai_feedback, quiz['id']))
+    ''', (json.dumps(answers), score, 10, ai_feedback, quiz['id']))
     
     conn.commit()
     conn.close()
@@ -1070,9 +1102,9 @@ Provide brief, actionable feedback (2-3 sentences) highlighting strengths and ar
     
     conn.execute('''
         UPDATE academic_quiz_history 
-        SET answers = ?, score = ?, ai_feedback = ?, completed = 1
+        SET answers = ?, score = ?, total_questions = ?, ai_feedback = ?, completed = 1
         WHERE id = ?
-    ''', (json.dumps(answers), score, ai_feedback, quiz['id']))
+    ''', (json.dumps(answers), score, 15, ai_feedback, quiz['id']))
     
     conn.commit()
     conn.close()

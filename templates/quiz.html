@@ -51,22 +51,56 @@
             <div class="quiz-sections">
                 <!-- Career Learning Quiz -->
                 <div class="quiz-section">
+                    {% if career_quiz_today %}
+                    <div class="quiz-completed-card">
+                        <h2>🎯 Career Learning Quiz</h2>
+                        <div class="quiz-result">
+                            <div class="score-display">
+                                <div class="score-big">{{ career_quiz_today['score'] }}/{{ career_quiz_today['total_questions'] }}</div>
+                                <div class="score-label">Your Score</div>
+                            </div>
+                            <div class="ai-feedback-box">
+                                <h4>🤖 AI Insights</h4>
+                                <p>{{ career_quiz_today['ai_feedback'] }}</p>
+                            </div>
+                        </div>
+                        <p class="next-quiz-message">✨ Come back tomorrow for a new quiz!</p>
+                    </div>
+                    {% else %}
                     <div class="quiz-header-card">
                         <h2>🎯 Career Learning Quiz</h2>
                         <p>10 questions based on today's learning topic</p>
                         <button class="start-quiz-btn" onclick="startCareerQuiz()">Start Career Quiz →</button>
                     </div>
                     <div id="careerQuizContent"></div>
+                    {% endif %}
                 </div>
 
                 <!-- Academic Quiz -->
                 <div class="quiz-section">
+                    {% if academic_quiz_today %}
+                    <div class="quiz-completed-card">
+                        <h2>📚 Academic Quiz</h2>
+                        <div class="quiz-result">
+                            <div class="score-display">
+                                <div class="score-big">{{ academic_quiz_today['score'] }}/{{ academic_quiz_today['total_questions'] }}</div>
+                                <div class="score-label">Your Score</div>
+                            </div>
+                            <div class="ai-feedback-box">
+                                <h4>🤖 AI Insights</h4>
+                                <p>{{ academic_quiz_today['ai_feedback'] }}</p>
+                            </div>
+                        </div>
+                        <p class="next-quiz-message">✨ Come back tomorrow for a new quiz!</p>
+                    </div>
+                    {% else %}
                     <div class="quiz-header-card">
                         <h2>📚 Academic Quiz</h2>
                         <p>15 questions (5 from each of your 3 current subjects)</p>
                         <button class="start-quiz-btn" onclick="startAcademicQuiz()">Start Academic Quiz →</button>
                     </div>
                     <div id="academicQuizContent"></div>
+                    {% endif %}
                 </div>
             </div>
         </main>
@@ -147,18 +181,8 @@
         }
 
         function showCareerScore(score, feedback) {
-            const percentage = (score / 10) * 100;
-            document.getElementById('careerQuizContent').innerHTML = `
-                <div class="score-display">
-                    <h2>✅ Career Quiz Complete!</h2>
-                    <div class="score-value">${score}/10</div>
-                    <div class="score-percentage">${percentage}% Correct</div>
-                    <div class="ai-feedback-box">
-                        <h3>🤖 AI Feedback</h3>
-                        <p>${feedback}</p>
-                    </div>
-                </div>
-            `;
+            // Reload page to show the completed card layout
+            window.location.reload();
         }
 
         // Academic Quiz Functions
@@ -231,29 +255,8 @@
         }
 
         function showAcademicScore(score, feedback, subjectScores) {
-            const percentage = (score / 15) * 100;
-            let subjectHtml = '';
-            
-            if (subjectScores) {
-                subjectHtml = '<div class="subject-scores"><h4>Performance by Subject:</h4>';
-                for (const [subject, scores] of Object.entries(subjectScores)) {
-                    subjectHtml += `<div class="subject-score-item">${subject}: ${scores.correct}/${scores.total}</div>`;
-                }
-                subjectHtml += '</div>';
-            }
-
-            document.getElementById('academicQuizContent').innerHTML = `
-                <div class="score-display">
-                    <h2>✅ Academic Quiz Complete!</h2>
-                    <div class="score-value">${score}/15</div>
-                    <div class="score-percentage">${percentage.toFixed(1)}% Correct</div>
-                    ${subjectHtml}
-                    <div class="ai-feedback-box">
-                        <h3>🤖 AI Feedback</h3>
-                        <p>${feedback}</p>
-                    </div>
-                </div>
-            `;
+            // Reload page to show the completed card layout
+            window.location.reload();
         }
     </script>
 </body>
