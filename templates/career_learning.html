@@ -109,7 +109,6 @@
         let currentSelectedDay = null;
 
         // Count completed days
-        const completedDays = document.querySelectorAll('.day-card .day-status:contains("Completed")').length;
         document.getElementById('completed-count').textContent = '{{ roadmap|selectattr("is_completed")|list|length }}';
 
         function selectDay(dayNumber, currentDay) {
