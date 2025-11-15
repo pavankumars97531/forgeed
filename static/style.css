@@ -1,3 +1,13 @@
+:root {
+    /* Theme Colors - Coordinated across dashboard */
+    --color-academic: #2196F3;
+    --color-academic-light: rgba(33, 150, 243, 0.1);
+    --color-career: #9b7fd7;
+    --color-career-light: rgba(155, 127, 215, 0.1);
+    --color-wellbeing: #f4a261;
+    --color-wellbeing-light: rgba(244, 162, 97, 0.1);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -326,10 +336,10 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.stat-card.blue { border-left: 4px solid #5b9bd5; }
-.stat-card.green { border-left: 4px solid #70ad47; }
-.stat-card.purple { border-left: 4px solid #9b7fd7; }
-.stat-card.orange { border-left: 4px solid #f4a261; }
+.stat-card.blue { border-left: 4px solid var(--color-academic); }
+.stat-card.green { border-left: 4px solid var(--color-academic); }
+.stat-card.purple { border-left: 4px solid var(--color-career); }
+.stat-card.orange { border-left: 4px solid var(--color-wellbeing); }
 
 .stat-value {
     font-size: 32px;
