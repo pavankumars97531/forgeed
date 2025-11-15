@@ -4,159 +4,236 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Quiz - ForgeEd</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="app-container">
         <nav class="sidebar">
-            <div class="sidebar-logo">
-                <h2>ForgeEd</h2>
-                <p>AI-Enhanced LMS</p>
+            <div class="logo">
+                <h2>🎓 ForgeEd</h2>
+                <p>AI-Enhanced Learning</p>
             </div>
-            
-            <div class="sidebar-nav">
-                <a href="/dashboard" class="nav-item">
-                    <span>🏠</span> Dashboard
-                </a>
-                <a href="/courses" class="nav-item">
-                    <span>📚</span> My Courses
-                </a>
-                <a href="/quiz" class="nav-item active">
-                    <span>✍️</span> Daily Quiz
-                </a>
-                <a href="/slu-gpt" class="nav-item">
-                    <span>🤖</span> SLU GPT
-                </a>
-                <a href="#" class="nav-item">
-                    <span>📈</span> My Progress
-                </a>
-                <a href="#" class="nav-item">
-                    <span>📅</span> Schedule
-                </a>
-                <a href="#" class="nav-item">
-                    <span>👤</span> Profile
-                </a>
-            </div>
-            
-            <div class="sidebar-footer">
-                <a href="/logout" class="logout-btn">
-                    <span>🚪</span> Logout
-                </a>
-            </div>
+            <ul class="nav-links">
+                <li><a href="/dashboard">📊 Dashboard</a></li>
+                <li><a href="/courses">📚 My Courses</a></li>
+                <li><a href="/career-learning">🎯 Career Learning</a></li>
+                <li><a href="/quiz" class="active">📝 Daily Quiz</a></li>
+                <li><a href="/wellbeing">💚 Wellbeing</a></li>
+                <li><a href="/slu-gpt">💬 SLU GPT</a></li>
+                <li><a href="/logout">🚪 Logout</a></li>
+            </ul>
         </nav>
-        
+
         <main class="main-content">
-            <div class="quiz-container">
-                <div class="quiz-header">
-                    <div class="quiz-info">
-                        <h2>Your Personalized Quiz for Today</h2>
-                        <p>10 AI-generated questions based on your courses • Test your knowledge!</p>
+            <div class="page-header">
+                <h1>📝 Daily Quiz</h1>
+                <p>Test your knowledge with AI-generated quizzes</p>
+            </div>
+
+            <div class="quiz-sections">
+                <!-- Career Learning Quiz -->
+                <div class="quiz-section">
+                    <div class="quiz-header-card">
+                        <h2>🎯 Career Learning Quiz</h2>
+                        <p>10 questions based on today's learning topic</p>
+                        <button class="start-quiz-btn" onclick="startCareerQuiz()">Start Career Quiz →</button>
                     </div>
-                    <button class="btn-start" onclick="startQuiz()">Start Quiz →</button>
+                    <div id="careerQuizContent"></div>
                 </div>
-                
-                <div id="quizContent"></div>
+
+                <!-- Academic Quiz -->
+                <div class="quiz-section">
+                    <div class="quiz-header-card">
+                        <h2>📚 Academic Quiz</h2>
+                        <p>15 questions (5 from each of your 3 current subjects)</p>
+                        <button class="start-quiz-btn" onclick="startAcademicQuiz()">Start Academic Quiz →</button>
+                    </div>
+                    <div id="academicQuizContent"></div>
+                </div>
             </div>
         </main>
     </div>
-    
+
     <script>
-        let quizData = null;
-        let userAnswers = [];
-        
-        async function startQuiz() {
-            document.getElementById('quizContent').innerHTML = '<div class="loading">Loading your personalized quiz...</div>';
-            
+        let careerQuizData = null;
+        let academicQuizData = null;
+        let careerAnswers = [];
+        let academicAnswers = [];
+
+        // Career Quiz Functions
+        async function startCareerQuiz() {
+            document.getElementById('careerQuizContent').innerHTML = '<div class="loading">🔄 Generating your career quiz...</div>';
+
             try {
-                const response = await fetch('/api/generate-quiz', {
+                const response = await fetch('/api/generate-career-quiz', {
                     method: 'POST'
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.completed) {
-                    showScore(data.score, data.quiz.questions.length);
+                    showCareerScore(data.score, data.ai_feedback);
                     return;
                 }
-                
-                quizData = data.quiz;
-                userAnswers = new Array(quizData.questions.length).fill(null);
-                renderQuiz();
+
+                careerQuizData = data.quiz;
+                careerAnswers = new Array(careerQuizData.questions.length).fill(null);
+                renderCareerQuiz();
             } catch (error) {
-                document.getElementById('quizContent').innerHTML = '<div class="loading">Error loading quiz. Please try again.</div>';
+                document.getElementById('careerQuizContent').innerHTML = `<div class="error">Error: ${error.message}</div>`;
             }
         }
-        
-        function renderQuiz() {
-            let html = '';
-            
-            quizData.questions.forEach((q, index) => {
+
+        function renderCareerQuiz() {
+            let html = '<div class="quiz-questions">';
+
+            careerQuizData.questions.forEach((q, index) => {
                 html += `
                     <div class="question-card">
-                        <div class="question-number">Question ${index + 1} of ${quizData.questions.length}</div>
+                        <div class="question-number">Question ${index + 1} of ${careerQuizData.questions.length}</div>
                         <div class="question-text">${q.question}</div>
                         <div class="options">
                             ${q.options.map((option, optIndex) => `
                                 <label class="option">
-                                    <input type="radio" name="q${index}" value="${optIndex}" onchange="saveAnswer(${index}, ${optIndex})">
-                                    ${option}
+                                    <input type="radio" name="career_q${index}" value="${optIndex}" onchange="careerAnswers[${index}] = ${optIndex}">
+                                    <span>${option}</span>
                                 </label>
                             `).join('')}
                         </div>
                     </div>
                 `;
             });
-            
-            html += '<button class="btn-submit-quiz" onclick="submitQuiz()">Submit Quiz</button>';
-            
-            document.getElementById('quizContent').innerHTML = html;
+
+            html += '</div><button class="submit-quiz-btn" onclick="submitCareerQuiz()">Submit Career Quiz</button>';
+            document.getElementById('careerQuizContent').innerHTML = html;
         }
-        
-        function saveAnswer(questionIndex, answerIndex) {
-            userAnswers[questionIndex] = answerIndex;
-        }
-        
-        async function submitQuiz() {
-            if (userAnswers.includes(null)) {
+
+        async function submitCareerQuiz() {
+            if (careerAnswers.includes(null)) {
                 alert('Please answer all questions before submitting.');
                 return;
             }
-            
+
             try {
-                const response = await fetch('/api/submit-quiz', {
+                const response = await fetch('/api/submit-career-quiz', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ answers: userAnswers })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({answers: careerAnswers})
                 });
-                
+
                 const data = await response.json();
-                showScore(data.score, data.total);
+                showCareerScore(data.score, data.ai_feedback);
             } catch (error) {
-                alert('Error submitting quiz. Please try again.');
+                alert('Error submitting quiz: ' + error.message);
             }
         }
-        
-        function showScore(score, total) {
-            const percentage = Math.round((score / total) * 100);
-            let message = '';
-            
-            if (percentage >= 80) {
-                message = 'Excellent work! You have a strong understanding of the material.';
-            } else if (percentage >= 60) {
-                message = 'Good effort! Keep studying to improve your understanding.';
-            } else {
-                message = 'Keep practicing! Consider reviewing the course materials.';
-            }
-            
-            document.getElementById('quizContent').innerHTML = `
+
+        function showCareerScore(score, feedback) {
+            const percentage = (score / 10) * 100;
+            document.getElementById('careerQuizContent').innerHTML = `
                 <div class="score-display">
-                    <h2>Quiz Complete!</h2>
-                    <div class="score-value">${score}/${total}</div>
-                    <p style="font-size: 18px; color: #666;">${percentage}% Correct</p>
-                    <p style="margin-top: 16px; color: #666;">${message}</p>
-                    <button class="btn-start" style="margin-top: 32px;" onclick="location.reload()">Try Again Tomorrow</button>
+                    <h2>✅ Career Quiz Complete!</h2>
+                    <div class="score-value">${score}/10</div>
+                    <div class="score-percentage">${percentage}% Correct</div>
+                    <div class="ai-feedback-box">
+                        <h3>🤖 AI Feedback</h3>
+                        <p>${feedback}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Academic Quiz Functions
+        async function startAcademicQuiz() {
+            document.getElementById('academicQuizContent').innerHTML = '<div class="loading">🔄 Generating your academic quiz...</div>';
+
+            try {
+                const response = await fetch('/api/generate-academic-quiz', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.completed) {
+                    showAcademicScore(data.score, data.ai_feedback);
+                    return;
+                }
+
+                academicQuizData = data.quiz;
+                academicAnswers = new Array(academicQuizData.questions.length).fill(null);
+                renderAcademicQuiz();
+            } catch (error) {
+                document.getElementById('academicQuizContent').innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function renderAcademicQuiz() {
+            let html = '<div class="quiz-questions">';
+
+            academicQuizData.questions.forEach((q, index) => {
+                html += `
+                    <div class="question-card">
+                        <div class="question-number">Question ${index + 1} of ${academicQuizData.questions.length}</div>
+                        <div class="subject-tag">${q.subject || 'General'}</div>
+                        <div class="question-text">${q.question}</div>
+                        <div class="options">
+                            ${q.options.map((option, optIndex) => `
+                                <label class="option">
+                                    <input type="radio" name="academic_q${index}" value="${optIndex}" onchange="academicAnswers[${index}] = ${optIndex}">
+                                    <span>${option}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div><button class="submit-quiz-btn" onclick="submitAcademicQuiz()">Submit Academic Quiz</button>';
+            document.getElementById('academicQuizContent').innerHTML = html;
+        }
+
+        async function submitAcademicQuiz() {
+            if (academicAnswers.includes(null)) {
+                alert('Please answer all questions before submitting.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/submit-academic-quiz', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({answers: academicAnswers})
+                });
+
+                const data = await response.json();
+                showAcademicScore(data.score, data.ai_feedback, data.subject_scores);
+            } catch (error) {
+                alert('Error submitting quiz: ' + error.message);
+            }
+        }
+
+        function showAcademicScore(score, feedback, subjectScores) {
+            const percentage = (score / 15) * 100;
+            let subjectHtml = '';
+            
+            if (subjectScores) {
+                subjectHtml = '<div class="subject-scores"><h4>Performance by Subject:</h4>';
+                for (const [subject, scores] of Object.entries(subjectScores)) {
+                    subjectHtml += `<div class="subject-score-item">${subject}: ${scores.correct}/${scores.total}</div>`;
+                }
+                subjectHtml += '</div>';
+            }
+
+            document.getElementById('academicQuizContent').innerHTML = `
+                <div class="score-display">
+                    <h2>✅ Academic Quiz Complete!</h2>
+                    <div class="score-value">${score}/15</div>
+                    <div class="score-percentage">${percentage.toFixed(1)}% Correct</div>
+                    ${subjectHtml}
+                    <div class="ai-feedback-box">
+                        <h3>🤖 AI Feedback</h3>
+                        <p>${feedback}</p>
+                    </div>
                 </div>
             `;
         }

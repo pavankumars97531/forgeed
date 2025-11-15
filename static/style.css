@@ -719,3 +719,501 @@ body {
     padding: 40px;
     color: #666;
 }
+
+/* Career Learning Roadmap */
+.roadmap-progress {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.progress-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.progress-card h3 {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.big-number {
+    font-size: 48px;
+    font-weight: 700;
+    color: #4a5fc1;
+    margin: 10px 0;
+}
+
+.roadmap-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.roadmap-timeline {
+    max-height: 600px;
+    overflow-y: auto;
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.day-card {
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.day-card.current-day {
+    background: linear-gradient(135deg, #4a5fc1 0%, #6366f1 100%);
+    color: white;
+}
+
+.day-card.past-day {
+    background: #f0f4f8;
+    border: 2px solid #e2e8f0;
+}
+
+.day-card.future-day.locked {
+    background: #f7fafc;
+    color: #a0aec0;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.day-card:hover:not(.locked) {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.day-number {
+    font-weight: 700;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.day-topic {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.day-status {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+.day-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#complete-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.study-info {
+    background: #f0f4f8;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.theory-section, .resources-section {
+    margin-top: 30px;
+}
+
+.theory-section h3, .resources-section h3 {
+    margin-bottom: 15px;
+}
+
+#theory-content {
+    line-height: 1.8;
+}
+
+#resources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.resource-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f0f4f8;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.resource-link:hover {
+    background: #4a5fc1;
+    color: white;
+    transform: translateX(5px);
+}
+
+/* Wellbeing Assessment */
+.wellbeing-form {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.wellbeing-completed {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.slider-group {
+    margin-bottom: 30px;
+}
+
+.slider-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.slider-container input[type="range"] {
+    flex: 1;
+    height: 8px;
+    border-radius: 5px;
+    background: #e2e8f0;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #4a5fc1;
+    cursor: pointer;
+}
+
+.slider-container input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #4a5fc1;
+    cursor: pointer;
+    border: none;
+}
+
+.slider-value {
+    min-width: 50px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 18px;
+    color: #4a5fc1;
+}
+
+.text-group {
+    margin-bottom: 25px;
+}
+
+.text-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.text-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.multiple-choice-group {
+    margin-bottom: 25px;
+}
+
+.multiple-choice-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.multiple-choice-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #4a5fc1 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+}
+
+.submit-btn:hover {
+    opacity: 0.9;
+}
+
+.big-score {
+    font-size: 72px;
+    font-weight: 700;
+    color: #4a5fc1;
+    margin: 20px 0;
+}
+
+.ai-insights-box {
+    background: #f0f4f8;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.ai-insights-box h3 {
+    margin-bottom: 10px;
+}
+
+.recent-assessments {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-top: 30px;
+}
+
+.assessment-history {
+    margin-top: 20px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.history-item .date {
+    min-width: 100px;
+    font-weight: 600;
+}
+
+.score-bar {
+    flex: 1;
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%);
+    transition: width 0.3s;
+}
+
+/* Updated Quiz Sections */
+.quiz-sections {
+    display: grid;
+    gap: 30px;
+}
+
+.quiz-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.quiz-header-card {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.quiz-header-card h2 {
+    margin-bottom: 10px;
+}
+
+.start-quiz-btn {
+    background: linear-gradient(135deg, #4a5fc1 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.start-quiz-btn:hover {
+    opacity: 0.9;
+}
+
+.quiz-questions {
+    margin-bottom: 20px;
+}
+
+.subject-tag {
+    display: inline-block;
+    background: #4a5fc1;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.submit-quiz-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+}
+
+.submit-quiz-btn:hover {
+    background: #45a049;
+}
+
+.score-percentage {
+    font-size: 24px;
+    color: #666;
+    margin-top: 10px;
+}
+
+.ai-feedback-box {
+    background: #f0f4f8;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: left;
+}
+
+.subject-scores {
+    background: #f9fafb;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.subject-score-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+/* Dashboard Graphs */
+.graphs-section {
+    margin-top: 40px;
+}
+
+.graphs-section h3 {
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.graphs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.graph-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.graph-card h4 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 16px;
+}
+
+.graph-card canvas {
+    max-height: 250px;
+}
+
+/* Unified Navigation */
+.sidebar .logo {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar .nav-links {
+    list-style: none;
+    padding: 20px 0;
+}
+
+.sidebar .nav-links li {
+    margin-bottom: 5px;
+}
+
+.sidebar .nav-links a {
+    display: block;
+    padding: 12px 20px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.sidebar .nav-links a:hover,
+.sidebar .nav-links a.active {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}

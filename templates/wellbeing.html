@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wellbeing - ForgeEd</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="logo">
+                <h2>🎓 ForgeEd</h2>
+                <p>AI-Enhanced Learning</p>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/dashboard">📊 Dashboard</a></li>
+                <li><a href="/courses">📚 My Courses</a></li>
+                <li><a href="/career-learning">🎯 Career Learning</a></li>
+                <li><a href="/quiz">📝 Daily Quiz</a></li>
+                <li><a href="/wellbeing" class="active">💚 Wellbeing</a></li>
+                <li><a href="/slu-gpt">💬 SLU GPT</a></li>
+                <li><a href="/logout">🚪 Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>💚 Daily Wellbeing Assessment</h1>
+                <p>Track your mental health and get personalized AI insights</p>
+            </div>
+
+            {% if existing_assessment %}
+            <div class="wellbeing-completed">
+                <h2>✅ Today's Assessment Complete!</h2>
+                <div class="score-display">
+                    <h3>Your Wellbeing Score</h3>
+                    <div class="big-score">{{ existing_assessment['total_score'] }}/100</div>
+                </div>
+                <div class="ai-insights-box">
+                    <h3>🤖 AI Insights & Motivation</h3>
+                    <p>{{ existing_assessment['ai_insights'] }}</p>
+                </div>
+                <p style="text-align: center; margin-top: 20px;">Come back tomorrow for your next assessment!</p>
+            </div>
+            {% else %}
+            <div class="wellbeing-form">
+                <form id="wellbeingForm">
+                    <h2>How are you feeling today?</h2>
+
+                    <div class="slider-group">
+                        <label>😊 Happiness Level</label>
+                        <div class="slider-container">
+                            <input type="range" id="happiness" name="happiness" min="1" max="100" value="50" oninput="updateSliderValue('happiness', this.value)">
+                            <span class="slider-value" id="happiness-value">50</span>
+                        </div>
+                    </div>
+
+                    <div class="slider-group">
+                        <label>😰 Stress Level</label>
+                        <div class="slider-container">
+                            <input type="range" id="stress" name="stress" min="1" max="100" value="50" oninput="updateSliderValue('stress', this.value)">
+                            <span class="slider-value" id="stress-value">50</span>
+                        </div>
+                    </div>
+
+                    <div class="slider-group">
+                        <label>⚡ Energy Level</label>
+                        <div class="slider-container">
+                            <input type="range" id="energy" name="energy" min="1" max="100" value="50" oninput="updateSliderValue('energy', this.value)">
+                            <span class="slider-value" id="energy-value">50</span>
+                        </div>
+                    </div>
+
+                    <div class="slider-group">
+                        <label>🎯 Motivation Level</label>
+                        <div class="slider-container">
+                            <input type="range" id="motivation" name="motivation" min="1" max="100" value="50" oninput="updateSliderValue('motivation', this.value)">
+                            <span class="slider-value" id="motivation-value">50</span>
+                        </div>
+                    </div>
+
+                    <div class="slider-group">
+                        <label>😴 Sleep Quality (last night)</label>
+                        <div class="slider-container">
+                            <input type="range" id="sleep" name="sleep" min="1" max="100" value="50" oninput="updateSliderValue('sleep', this.value)">
+                            <span class="slider-value" id="sleep-value">50</span>
+                        </div>
+                    </div>
+
+                    <div class="text-group">
+                        <label>💭 How are you feeling overall today?</label>
+                        <textarea id="feelings" name="feelings" rows="3" placeholder="Describe your feelings..."></textarea>
+                    </div>
+
+                    <div class="text-group">
+                        <label>🚧 Any challenges you're facing?</label>
+                        <textarea id="challenges" name="challenges" rows="3" placeholder="Share any difficulties or concerns..."></textarea>
+                    </div>
+
+                    <div class="text-group">
+                        <label>🏆 Any achievements today?</label>
+                        <textarea id="achievements" name="achievements" rows="3" placeholder="Celebrate your wins, big or small..."></textarea>
+                    </div>
+
+                    <div class="multiple-choice-group">
+                        <label>🤝 Do you need support?</label>
+                        <select id="support" name="support">
+                            <option value="none">No, I'm doing fine</option>
+                            <option value="maybe">Maybe, I'm uncertain</option>
+                            <option value="yes">Yes, I could use some help</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Submit Assessment</button>
+                </form>
+
+                <div id="result-section" style="display: none;">
+                    <h2>✅ Assessment Complete!</h2>
+                    <div class="score-display">
+                        <h3>Your Wellbeing Score</h3>
+                        <div class="big-score" id="final-score">0/100</div>
+                    </div>
+                    <div class="ai-insights-box">
+                        <h3>🤖 AI Insights & Motivation</h3>
+                        <p id="ai-insights"></p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if recent_assessments %}
+            <div class="recent-assessments">
+                <h3>📈 Your Recent Wellbeing Trend</h3>
+                <div class="assessment-history">
+                    {% for assessment in recent_assessments %}
+                    <div class="history-item">
+                        <span class="date">{{ assessment['assessment_date'] }}</span>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: {{ assessment['total_score'] }}%"></div>
+                        </div>
+                        <span class="score">{{ assessment['total_score'] }}/100</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <script>
+        function updateSliderValue(id, value) {
+            document.getElementById(id + '-value').textContent = value;
+        }
+
+        document.getElementById('wellbeingForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = {
+                happiness_score: parseInt(document.getElementById('happiness').value),
+                stress_score: parseInt(document.getElementById('stress').value),
+                energy_score: parseInt(document.getElementById('energy').value),
+                motivation_score: parseInt(document.getElementById('motivation').value),
+                sleep_quality: parseInt(document.getElementById('sleep').value),
+                feelings: document.getElementById('feelings').value,
+                challenges: document.getElementById('challenges').value,
+                achievements: document.getElementById('achievements').value,
+                support_needed: document.getElementById('support').value
+            };
+
+            try {
+                const response = await fetch('/api/submit-wellbeing', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('wellbeingForm').style.display = 'none';
+                    document.getElementById('result-section').style.display = 'block';
+                    document.getElementById('final-score').textContent = data.total_score + '/100';
+                    document.getElementById('ai-insights').textContent = data.ai_insights;
+                }
+            } catch (error) {
+                alert('Error submitting assessment: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -90,6 +90,80 @@ def init_db():
         )
     ''')
     
+    # Career Learning Roadmap (90-day learning path)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS daily_roadmap (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER NOT NULL,
+            day_number INTEGER NOT NULL,
+            topic TEXT NOT NULL,
+            theory_content TEXT,
+            resources TEXT,
+            study_duration INTEGER DEFAULT 120,
+            is_completed BOOLEAN DEFAULT 0,
+            completed_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES students (id),
+            UNIQUE(student_id, day_number)
+        )
+    ''')
+    
+    # Career Quiz History (questions based on daily roadmap topic)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS career_quiz_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER NOT NULL,
+            quiz_date DATE NOT NULL,
+            day_number INTEGER NOT NULL,
+            topic TEXT NOT NULL,
+            questions TEXT NOT NULL,
+            answers TEXT,
+            score INTEGER DEFAULT 0,
+            total_questions INTEGER DEFAULT 10,
+            ai_feedback TEXT,
+            completed BOOLEAN DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES students (id)
+        )
+    ''')
+    
+    # Academic Quiz History (15 questions from 3 current subjects)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS academic_quiz_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER NOT NULL,
+            quiz_date DATE NOT NULL,
+            questions TEXT NOT NULL,
+            answers TEXT,
+            score INTEGER DEFAULT 0,
+            total_questions INTEGER DEFAULT 15,
+            ai_feedback TEXT,
+            completed BOOLEAN DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES students (id)
+        )
+    ''')
+    
+    # Wellbeing Assessments (daily mental health tracking)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS wellbeing_assessments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER NOT NULL,
+            assessment_date DATE NOT NULL,
+            happiness_score INTEGER DEFAULT 50,
+            stress_score INTEGER DEFAULT 50,
+            energy_score INTEGER DEFAULT 50,
+            motivation_score INTEGER DEFAULT 50,
+            sleep_quality INTEGER DEFAULT 50,
+            responses TEXT,
+            total_score INTEGER DEFAULT 50,
+            ai_insights TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES students (id),
+            UNIQUE(student_id, assessment_date)
+        )
+    ''')
+    
     conn.commit()
     conn.close()
     print("Database initialized successfully!")

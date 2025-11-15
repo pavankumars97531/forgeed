@@ -452,5 +452,682 @@ Return ONLY a JSON array of course codes, e.g., ["IS 6100", "IS 6200", "IS 6300"
     except:
         return list(available_courses[:3])
 
+@app.route('/career-learning')
+def career_learning():
+    if 'student_id' not in session:
+        return redirect(url_for('index'))
+    
+    student_id = session['student_id']
+    conn = get_db()
+    
+    student = conn.execute('SELECT * FROM students WHERE id = ?', (student_id,)).fetchone()
+    
+    # Get current day number (days since account creation)
+    from datetime import datetime
+    created_at = datetime.fromisoformat(student['created_at'])
+    days_elapsed = (datetime.now() - created_at).days + 1
+    current_day = min(days_elapsed, 90)  # Cap at 90 days
+    
+    # Get all roadmap days
+    roadmap = conn.execute('''
+        SELECT * FROM daily_roadmap 
+        WHERE student_id = ? 
+        ORDER BY day_number
+    ''', (student_id,)).fetchall()
+    
+    conn.close()
+    
+    return render_template('career_learning.html', 
+                         student=student,
+                         roadmap=roadmap,
+                         current_day=current_day)
+
+@app.route('/api/get-day-content/<int:day_number>')
+def get_day_content(day_number):
+    if 'student_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    student_id = session['student_id']
+    conn = get_db()
+    
+    # Server-side day-locking validation
+    student = conn.execute('SELECT * FROM students WHERE id = ?', (student_id,)).fetchone()
+    created_at = datetime.fromisoformat(student['created_at'])
+    current_day = min((datetime.now() - created_at).days + 1, 90)
+    
+    # Prevent access to future days
+    if day_number > current_day:
+        conn.close()
+        return jsonify({'error': 'This day is locked. Complete previous days first.'}), 403
+    
+    # Get the day's topic from roadmap
+    day_topic = conn.execute('''
+        SELECT * FROM daily_roadmap 
+        WHERE student_id = ? AND day_number = ?
+    ''', (student_id, day_number)).fetchone()
+    
+    if not day_topic:
+        conn.close()
+        return jsonify({'error': 'Day not found'}), 404
+    
+    # Generate detailed theory content using ChatGPT if not already generated
+    if not day_topic['theory_content'] or len(day_topic['theory_content']) < 100:
+        if client:
+            try:
+                prompt = f"""You are creating a 2-hour learning session for Day {day_number} of a 90-day career roadmap.
+
+Career Goal: {student['career_goal']}
+Today's Topic: {day_topic['topic']}
+
+Create comprehensive learning content with:
+1. Introduction (what and why this topic matters)
+2. Key Concepts (main points to understand)
+3. Practical Applications (how it's used in the real world)
+4. Learning Objectives (what you'll know after 2 hours)
+
+Format the response with proper HTML formatting using <h3>, <h4>, <p>, <ul>, <li>, <strong> tags.
+Make it engaging and suitable for 2 hours of study.
+Keep it under 800 words."""
+
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=1500,
+                    temperature=0.7
+                )
+                
+                theory_content = response.choices[0].message.content.strip()
+                
+                # Update database with generated content
+                conn.execute('''
+                    UPDATE daily_roadmap 
+                    SET theory_content = ?
+                    WHERE student_id = ? AND day_number = ?
+                ''', (theory_content, student_id, day_number))
+                conn.commit()
+                
+            except Exception as e:
+                theory_content = day_topic['theory_content'] or "Content generation failed. Please try again."
+        else:
+            theory_content = day_topic['theory_content'] or "AI service not configured."
+    else:
+        theory_content = day_topic['theory_content']
+    
+    # Get external resource links
+    resources = day_topic['resources'] if day_topic['resources'] else json.dumps([
+        {"title": "MDN Web Docs", "url": "https://developer.mozilla.org"},
+        {"title": "W3Schools", "url": "https://www.w3schools.com"},
+        {"title": "FreeCodeCamp", "url": "https://www.freecodecamp.org"}
+    ])
+    
+    conn.close()
+    
+    return jsonify({
+        'day_number': day_number,
+        'topic': day_topic['topic'],
+        'theory': theory_content,
+        'resources': json.loads(resources),
+        'study_duration': day_topic['study_duration'],
+        'is_completed': bool(day_topic['is_completed'])
+    })
+
+@app.route('/api/complete-day', methods=['POST'])
+def complete_day():
+    if 'student_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    student_id = session['student_id']
+    day_number = request.json.get('day_number') if request.json else None
+    
+    if not day_number:
+        return jsonify({'error': 'Day number required'}), 400
+    
+    conn = get_db()
+    
+    # Server-side validation - only allow completing current or past days
+    student = conn.execute('SELECT * FROM students WHERE id = ?', (student_id,)).fetchone()
+    created_at = datetime.fromisoformat(student['created_at'])
+    current_day = min((datetime.now() - created_at).days + 1, 90)
+    
+    # Prevent marking future days as complete
+    if day_number > current_day:
+        conn.close()
+        return jsonify({'error': 'Cannot complete future days'}), 403
+    
+    conn.execute('''
+        UPDATE daily_roadmap 
+        SET is_completed = 1, completed_at = CURRENT_TIMESTAMP
+        WHERE student_id = ? AND day_number = ?
+    ''', (student_id, day_number))
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True})
+
+@app.route('/wellbeing')
+def wellbeing():
+    if 'student_id' not in session:
+        return redirect(url_for('index'))
+    
+    student_id = session['student_id']
+    conn = get_db()
+    
+    # Check if today's assessment already exists
+    today = date.today().isoformat()
+    existing = conn.execute('''
+        SELECT * FROM wellbeing_assessments 
+        WHERE student_id = ? AND assessment_date = ?
+    ''', (student_id, today)).fetchone()
+    
+    # Get recent assessments for context
+    recent_assessments = conn.execute('''
+        SELECT * FROM wellbeing_assessments 
+        WHERE student_id = ?
+        ORDER BY assessment_date DESC
+        LIMIT 7
+    ''', (student_id,)).fetchall()
+    
+    conn.close()
+    
+    return render_template('wellbeing.html', 
+                         existing_assessment=existing,
+                         recent_assessments=recent_assessments)
+
+@app.route('/api/submit-wellbeing', methods=['POST'])
+def submit_wellbeing():
+    if 'student_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    student_id = session['student_id']
+    data = request.json
+    
+    # Calculate total score (average of all scores)
+    scores = [
+        data.get('happiness_score', 50),
+        data.get('stress_score', 50),
+        data.get('energy_score', 50),
+        data.get('motivation_score', 50),
+        data.get('sleep_quality', 50)
+    ]
+    total_score = int(sum(scores) / len(scores))
+    
+    # Store all responses as JSON
+    responses = json.dumps({
+        'feelings': data.get('feelings', ''),
+        'challenges': data.get('challenges', ''),
+        'achievements': data.get('achievements', ''),
+        'support_needed': data.get('support_needed', '')
+    })
+    
+    # Generate AI insights
+    ai_insights = ""
+    if client:
+        try:
+            prompt = f"""Analyze this student's daily wellbeing assessment:
+
+Happiness: {data.get('happiness_score', 50)}/100
+Stress: {data.get('stress_score', 50)}/100  
+Energy: {data.get('energy_score', 50)}/100
+Motivation: {data.get('motivation_score', 50)}/100
+Sleep Quality: {data.get('sleep_quality', 50)}/100
+
+Today's Feelings: {data.get('feelings', 'Not specified')}
+Challenges: {data.get('challenges', 'None mentioned')}
+Achievements: {data.get('achievements', 'None mentioned')}
+
+Provide brief, personalized insights (2-3 sentences):
+- If scores are good, provide motivation and encouragement
+- If scores are low, provide supportive suggestions for improvement
+- Acknowledge their achievements and challenges
+
+Keep it warm, supportive, and under 150 words."""
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=200,
+                temperature=0.8
+            )
+            
+            ai_insights = response.choices[0].message.content.strip()
+        except:
+            ai_insights = "Keep focusing on your wellbeing. Small daily improvements lead to great long-term results!"
+    
+    # Save to database
+    conn = get_db()
+    today = date.today().isoformat()
+    
+    # Check if today's assessment exists
+    existing = conn.execute('''
+        SELECT id FROM wellbeing_assessments 
+        WHERE student_id = ? AND assessment_date = ?
+    ''', (student_id, today)).fetchone()
+    
+    if existing:
+        # Update existing
+        conn.execute('''
+            UPDATE wellbeing_assessments
+            SET happiness_score = ?, stress_score = ?, energy_score = ?,
+                motivation_score = ?, sleep_quality = ?, responses = ?,
+                total_score = ?, ai_insights = ?
+            WHERE student_id = ? AND assessment_date = ?
+        ''', (data.get('happiness_score', 50), data.get('stress_score', 50),
+              data.get('energy_score', 50), data.get('motivation_score', 50),
+              data.get('sleep_quality', 50), responses, total_score, ai_insights,
+              student_id, today))
+    else:
+        # Insert new
+        conn.execute('''
+            INSERT INTO wellbeing_assessments 
+            (student_id, assessment_date, happiness_score, stress_score, energy_score,
+             motivation_score, sleep_quality, responses, total_score, ai_insights)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (student_id, today, data.get('happiness_score', 50),
+              data.get('stress_score', 50), data.get('energy_score', 50),
+              data.get('motivation_score', 50), data.get('sleep_quality', 50),
+              responses, total_score, ai_insights))
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({
+        'success': True,
+        'total_score': total_score,
+        'ai_insights': ai_insights
+    })
+
+@app.route('/api/generate-career-quiz', methods=['POST'])
+def generate_career_quiz():
+    if 'student_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    if not client:
+        return jsonify({'error': 'AI service not configured'}), 503
+    
+    student_id = session['student_id']
+    conn = get_db()
+    
+    today = date.today().isoformat()
+    
+    # Check if quiz already exists
+    existing = conn.execute('''
+        SELECT * FROM career_quiz_history 
+        WHERE student_id = ? AND quiz_date = ?
+    ''', (student_id, today)).fetchone()
+    
+    if existing and existing['completed']:
+        conn.close()
+        return jsonify({
+            'quiz': json.loads(existing['questions']),
+            'answers': json.loads(existing['answers']) if existing['answers'] else None,
+            'score': existing['score'],
+            'ai_feedback': existing['ai_feedback'],
+            'completed': True
+        })
+    
+    # Get today's roadmap topic
+    student = conn.execute('SELECT * FROM students WHERE id = ?', (student_id,)).fetchone()
+    created_at = datetime.fromisoformat(student['created_at'])
+    current_day = min((datetime.now() - created_at).days + 1, 90)
+    
+    day_topic = conn.execute('''
+        SELECT * FROM daily_roadmap 
+        WHERE student_id = ? AND day_number = ?
+    ''', (student_id, current_day)).fetchone()
+    
+    if not day_topic:
+        conn.close()
+        return jsonify({'error': 'No roadmap topic found for today'}), 404
+    
+    topic = day_topic['topic']
+    
+    prompt = f"""Generate a 10-question multiple choice quiz on this topic: {topic}
+
+Career Goal: {student['career_goal']}
+
+Questions should test understanding of today's learning topic.
+Return ONLY valid JSON:
+{{
+  "questions": [
+    {{"id": 1, "question": "...", "options": ["A", "B", "C", "D"], "correct": 0}}
+  ]
+}}"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=2000,
+            temperature=0.7
+        )
+        
+        quiz_json = response.choices[0].message.content.strip()
+        if quiz_json.startswith('```'):
+            quiz_json = quiz_json.split('```')[1]
+            if quiz_json.startswith('json'):
+                quiz_json = quiz_json[4:]
+            quiz_json = quiz_json.strip()
+        
+        quiz_data = json.loads(quiz_json)
+        
+        if existing:
+            conn.execute('UPDATE career_quiz_history SET questions = ?, topic = ?, day_number = ? WHERE id = ?',
+                        (json.dumps(quiz_data), topic, current_day, existing['id']))
+        else:
+            conn.execute('''
+                INSERT INTO career_quiz_history 
+                (student_id, quiz_date, day_number, topic, questions, total_questions)
+                VALUES (?, ?, ?, ?, ?, 10)
+            ''', (student_id, today, current_day, topic, json.dumps(quiz_data)))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'quiz': quiz_data, 'topic': topic, 'completed': False})
+    
+    except Exception as e:
+        conn.close()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/submit-career-quiz', methods=['POST'])
+def submit_career_quiz():
+    if 'student_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    student_id = session['student_id']
+    data = request.json
+    answers = data.get('answers', [])
+    
+    conn = get_db()
+    today = date.today().isoformat()
+    
+    quiz = conn.execute('''
+        SELECT * FROM career_quiz_history 
+        WHERE student_id = ? AND quiz_date = ?
+    ''', (student_id, today)).fetchone()
+    
+    if not quiz:
+        conn.close()
+        return jsonify({'error': 'Quiz not found'}), 404
+    
+    quiz_data = json.loads(quiz['questions'])
+    score = 0
+    wrong_answers = []
+    
+    for i, answer in enumerate(answers):
+        if i < len(quiz_data['questions']):
+            if answer == quiz_data['questions'][i]['correct']:
+                score += 1
+            else:
+                wrong_answers.append({
+                    'question': quiz_data['questions'][i]['question'],
+                    'correct_answer': quiz_data['questions'][i]['options'][quiz_data['questions'][i]['correct']],
+                    'your_answer': quiz_data['questions'][i]['options'][answer] if answer is not None else 'Not answered'
+                })
+    
+    # Generate AI feedback
+    ai_feedback = ""
+    if client and wrong_answers:
+        try:
+            wrong_list = '\n'.join([f"Q: {w['question']}\nYour answer: {w['your_answer']}\nCorrect: {w['correct_answer']}" 
+                                   for w in wrong_answers[:3]])
+            
+            prompt = f"""Student scored {score}/10 on a quiz about: {quiz['topic']}
+
+Wrong answers:
+{wrong_list}
+
+Provide brief feedback (2-3 sentences) on what they should review and how to improve. Be supportive and specific."""
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=150,
+                temperature=0.7
+            )
+            
+            ai_feedback = response.choices[0].message.content.strip()
+        except:
+            ai_feedback = f"You scored {score}/10. Review the questions you missed and study {quiz['topic']} more deeply."
+    else:
+        ai_feedback = f"Great job! You scored {score}/10 on {quiz['topic']}."
+    
+    conn.execute('''
+        UPDATE career_quiz_history 
+        SET answers = ?, score = ?, ai_feedback = ?, completed = 1
+        WHERE id = ?
+    ''', (json.dumps(answers), score, ai_feedback, quiz['id']))
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({
+        'score': score,
+        'total': 10,
+        'ai_feedback': ai_feedback
+    })
+
+@app.route('/api/generate-academic-quiz', methods=['POST'])
+def generate_academic_quiz():
+    if 'student_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    if not client:
+        return jsonify({'error': 'AI service not configured'}), 503
+    
+    student_id = session['student_id']
+    conn = get_db()
+    
+    today = date.today().isoformat()
+    
+    # Check if quiz already exists
+    existing = conn.execute('''
+        SELECT * FROM academic_quiz_history 
+        WHERE student_id = ? AND quiz_date = ?
+    ''', (student_id, today)).fetchone()
+    
+    if existing and existing['completed']:
+        conn.close()
+        return jsonify({
+            'quiz': json.loads(existing['questions']),
+            'answers': json.loads(existing['answers']) if existing['answers'] else None,
+            'score': existing['score'],
+            'ai_feedback': existing['ai_feedback'],
+            'completed': True
+        })
+    
+    # Get 3 current semester courses
+    courses = conn.execute('''
+        SELECT c.course_name 
+        FROM enrolled_courses ec
+        JOIN courses c ON ec.course_id = c.id
+        WHERE ec.student_id = ?
+        LIMIT 3
+    ''', (student_id,)).fetchall()
+    
+    if len(courses) < 3:
+        conn.close()
+        return jsonify({'error': 'Need at least 3 enrolled courses'}), 400
+    
+    courses_list = [c['course_name'] for c in courses]
+    
+    prompt = f"""Generate a 15-question multiple choice quiz (5 questions from each subject):
+
+Subject 1: {courses_list[0]}
+Subject 2: {courses_list[1]}
+Subject 3: {courses_list[2]}
+
+Return ONLY valid JSON:
+{{
+  "questions": [
+    {{"id": 1, "subject": "{courses_list[0]}", "question": "...", "options": ["A", "B", "C", "D"], "correct": 0}}
+  ]
+}}
+
+Generate exactly 15 questions (5 per subject)."""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=3000,
+            temperature=0.7
+        )
+        
+        quiz_json = response.choices[0].message.content.strip()
+        if quiz_json.startswith('```'):
+            quiz_json = quiz_json.split('```')[1]
+            if quiz_json.startswith('json'):
+                quiz_json = quiz_json[4:]
+            quiz_json = quiz_json.strip()
+        
+        quiz_data = json.loads(quiz_json)
+        
+        if existing:
+            conn.execute('UPDATE academic_quiz_history SET questions = ? WHERE id = ?',
+                        (json.dumps(quiz_data), existing['id']))
+        else:
+            conn.execute('''
+                INSERT INTO academic_quiz_history 
+                (student_id, quiz_date, questions, total_questions)
+                VALUES (?, ?, ?, 15)
+            ''', (student_id, today, json.dumps(quiz_data)))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'quiz': quiz_data, 'courses': courses_list, 'completed': False})
+    
+    except Exception as e:
+        conn.close()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/submit-academic-quiz', methods=['POST'])
+def submit_academic_quiz():
+    if 'student_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    student_id = session['student_id']
+    data = request.json
+    answers = data.get('answers', [])
+    
+    conn = get_db()
+    today = date.today().isoformat()
+    
+    quiz = conn.execute('''
+        SELECT * FROM academic_quiz_history 
+        WHERE student_id = ? AND quiz_date = ?
+    ''', (student_id, today)).fetchone()
+    
+    if not quiz:
+        conn.close()
+        return jsonify({'error': 'Quiz not found'}), 404
+    
+    quiz_data = json.loads(quiz['questions'])
+    score = 0
+    subject_scores = {}
+    
+    for i, answer in enumerate(answers):
+        if i < len(quiz_data['questions']):
+            q = quiz_data['questions'][i]
+            subject = q.get('subject', 'Unknown')
+            
+            if subject not in subject_scores:
+                subject_scores[subject] = {'correct': 0, 'total': 0}
+            
+            subject_scores[subject]['total'] += 1
+            
+            if answer == q['correct']:
+                score += 1
+                subject_scores[subject]['correct'] += 1
+    
+    # Generate AI feedback
+    ai_feedback = ""
+    if client:
+        try:
+            subject_analysis = '\n'.join([f"{subj}: {scores['correct']}/{scores['total']}" 
+                                        for subj, scores in subject_scores.items()])
+            
+            prompt = f"""Student scored {score}/15 on academic quiz covering 3 subjects:
+
+Performance by subject:
+{subject_analysis}
+
+Provide brief, actionable feedback (2-3 sentences) highlighting strengths and areas to focus on."""
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=150,
+                temperature=0.7
+            )
+            
+            ai_feedback = response.choices[0].message.content.strip()
+        except:
+            ai_feedback = f"You scored {score}/15 across all subjects. Review areas where you scored lower."
+    
+    conn.execute('''
+        UPDATE academic_quiz_history 
+        SET answers = ?, score = ?, ai_feedback = ?, completed = 1
+        WHERE id = ?
+    ''', (json.dumps(answers), score, ai_feedback, quiz['id']))
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({
+        'score': score,
+        'total': 15,
+        'subject_scores': subject_scores,
+        'ai_feedback': ai_feedback
+    })
+
+@app.route('/api/dashboard-graph-data')
+def dashboard_graph_data():
+    if 'student_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    student_id = session['student_id']
+    conn = get_db()
+    
+    # Get last 30 days of career quiz scores
+    career_scores = conn.execute('''
+        SELECT quiz_date, score, total_questions 
+        FROM career_quiz_history 
+        WHERE student_id = ? AND completed = 1
+        ORDER BY quiz_date DESC
+        LIMIT 30
+    ''', (student_id,)).fetchall()
+    
+    # Get last 30 days of academic quiz scores
+    academic_scores = conn.execute('''
+        SELECT quiz_date, score, total_questions 
+        FROM academic_quiz_history 
+        WHERE student_id = ? AND completed = 1
+        ORDER BY quiz_date DESC
+        LIMIT 30
+    ''', (student_id,)).fetchall()
+    
+    # Get last 30 days of wellbeing scores
+    wellbeing_scores = conn.execute('''
+        SELECT assessment_date, total_score 
+        FROM wellbeing_assessments 
+        WHERE student_id = ?
+        ORDER BY assessment_date DESC
+        LIMIT 30
+    ''', (student_id,)).fetchall()
+    
+    conn.close()
+    
+    return jsonify({
+        'career_quiz': [{'date': r['quiz_date'], 'score': r['score'], 'total': r['total_questions']} 
+                       for r in reversed(career_scores)],
+        'academic_quiz': [{'date': r['quiz_date'], 'score': r['score'], 'total': r['total_questions']} 
+                         for r in reversed(academic_scores)],
+        'wellbeing': [{'date': r['assessment_date'], 'score': r['total_score']} 
+                     for r in reversed(wellbeing_scores)]
+    })
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

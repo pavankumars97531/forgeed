@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Learning - ForgeEd</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="logo">
+                <h2>🎓 ForgeEd</h2>
+                <p>AI-Enhanced Learning</p>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/dashboard">📊 Dashboard</a></li>
+                <li><a href="/courses">📚 My Courses</a></li>
+                <li><a href="/career-learning" class="active">🎯 Career Learning</a></li>
+                <li><a href="/quiz">📝 Daily Quiz</a></li>
+                <li><a href="/wellbeing">💚 Wellbeing</a></li>
+                <li><a href="/slu-gpt">💬 SLU GPT</a></li>
+                <li><a href="/logout">🚪 Logout</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>🎯 Career Learning Roadmap</h1>
+                <p>90-day learning path to achieve your career goal: <strong>{{ student['career_goal'] }}</strong></p>
+            </div>
+
+            <div class="roadmap-progress">
+                <div class="progress-card">
+                    <h3>Current Day</h3>
+                    <div class="big-number">{{ current_day }}</div>
+                    <p>of 90 days</p>
+                </div>
+                <div class="progress-card">
+                    <h3>Completed Days</h3>
+                    <div class="big-number" id="completed-count">0</div>
+                    <p>topics mastered</p>
+                </div>
+                <div class="progress-card">
+                    <h3>Progress</h3>
+                    <div class="big-number">{{ (current_day / 90 * 100)|round|int }}%</div>
+                    <p>of roadmap</p>
+                </div>
+            </div>
+
+            <div class="roadmap-container">
+                <div class="roadmap-timeline">
+                    {% for day in roadmap %}
+                    <div class="day-card {% if day['day_number'] == current_day %}current-day{% elif day['day_number'] < current_day %}past-day{% else %}future-day locked{% endif %}" 
+                         data-day="{{ day['day_number'] }}"
+                         onclick="selectDay({{ day['day_number'] }}, {{ current_day }})">
+                        <div class="day-number">Day {{ day['day_number'] }}</div>
+                        <div class="day-topic">{{ day['topic'] }}</div>
+                        {% if day['is_completed'] %}
+                        <div class="day-status">✓ Completed</div>
+                        {% elif day['day_number'] == current_day %}
+                        <div class="day-status">📍 Today</div>
+                        {% elif day['day_number'] > current_day %}
+                        <div class="day-status">🔒 Locked</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="day-content">
+                    <div id="select-prompt">
+                        <h2>👈 Select a day to view learning content</h2>
+                        <p>Today is Day {{ current_day }}. Past days are accessible for review.</p>
+                        <p>Future days are locked and will unlock as you progress.</p>
+                    </div>
+
+                    <div id="day-details" style="display: none;">
+                        <div class="content-header">
+                            <h2 id="detail-title">Day X: Topic</h2>
+                            <button id="complete-btn" onclick="completeDay()" style="display: none;">Mark as Complete</button>
+                        </div>
+
+                        <div id="loading-content" style="display: none;">
+                            <p>🔄 Loading content...</p>
+                        </div>
+
+                        <div id="content-display" style="display: none;">
+                            <div class="study-info">
+                                <span>⏱️ Study Time: <strong id="study-duration">120 minutes</strong></span>
+                            </div>
+
+                            <div class="theory-section">
+                                <h3>📖 Theory & Learning Content</h3>
+                                <div id="theory-content"></div>
+                            </div>
+
+                            <div class="resources-section">
+                                <h3>🔗 External Resources for Further Learning</h3>
+                                <div id="resources-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let currentSelectedDay = null;
+
+        // Count completed days
+        const completedDays = document.querySelectorAll('.day-card .day-status:contains("Completed")').length;
+        document.getElementById('completed-count').textContent = '{{ roadmap|selectattr("is_completed")|list|length }}';
+
+        function selectDay(dayNumber, currentDay) {
+            // Check if day is locked
+            if (dayNumber > currentDay) {
+                alert('🔒 This day is locked. Complete previous days to unlock.');
+                return;
+            }
+
+            currentSelectedDay = dayNumber;
+
+            // Hide select prompt, show details
+            document.getElementById('select-prompt').style.display = 'none';
+            document.getElementById('day-details').style.display = 'block';
+            document.getElementById('loading-content').style.display = 'block';
+            document.getElementById('content-display').style.display = 'none';
+
+            // Fetch day content
+            fetch(`/api/get-day-content/${dayNumber}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('detail-title').textContent = `Day ${data.day_number}: ${data.topic}`;
+                    document.getElementById('study-duration').textContent = `${data.study_duration} minutes`;
+                    document.getElementById('theory-content').innerHTML = data.theory;
+
+                    // Display resources
+                    const resourcesList = document.getElementById('resources-list');
+                    resourcesList.innerHTML = '';
+                    data.resources.forEach(resource => {
+                        const link = document.createElement('a');
+                        link.href = resource.url;
+                        link.target = '_blank';
+                        link.className = 'resource-link';
+                        link.innerHTML = `<span>📚 ${resource.title}</span> <span>→</span>`;
+                        resourcesList.appendChild(link);
+                    });
+
+                    // Show complete button if not completed and is today
+                    if (!data.is_completed && dayNumber === currentDay) {
+                        document.getElementById('complete-btn').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('complete-btn').style.display = 'none';
+                    }
+
+                    document.getElementById('loading-content').style.display = 'none';
+                    document.getElementById('content-display').style.display = 'block';
+                })
+                .catch(err => {
+                    alert('Error loading content: ' + err.message);
+                    document.getElementById('loading-content').style.display = 'none';
+                });
+        }
+
+        function completeDay() {
+            if (!currentSelectedDay) return;
+
+            if (!confirm('Mark this day as complete?')) return;
+
+            fetch('/api/complete-day', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({day_number: currentSelectedDay})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Day marked as complete!');
+                    location.reload();
+                }
+            })
+            .catch(err => alert('Error: ' + err.message));
+        }
+    </script>
+</body>
+</html>

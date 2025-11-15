@@ -103,7 +103,118 @@
                 </div>
                 {% endfor %}
             </div>
+
+            <div class="graphs-section">
+                <h3>📈 Your Performance Trends</h3>
+                <div class="graphs-grid">
+                    <div class="graph-card">
+                        <h4>Career Quiz Scores</h4>
+                        <canvas id="careerQuizChart"></canvas>
+                    </div>
+                    <div class="graph-card">
+                        <h4>Academic Quiz Scores</h4>
+                        <canvas id="academicQuizChart"></canvas>
+                    </div>
+                    <div class="graph-card">
+                        <h4>Wellbeing Scores</h4>
+                        <canvas id="wellbeingChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Fetch and render all graphs
+        fetch('/api/dashboard-graph-data')
+            .then(res => res.json())
+            .then(data => {
+                // Career Quiz Chart
+                const careerDates = data.career_quiz.map(d => d.date);
+                const careerScores = data.career_quiz.map(d => (d.score / d.total) * 100);
+                
+                new Chart(document.getElementById('careerQuizChart'), {
+                    type: 'line',
+                    data: {
+                        labels: careerDates.length > 0 ? careerDates : ['No data yet'],
+                        datasets: [{
+                            label: 'Score (%)',
+                            data: careerScores.length > 0 ? careerScores : [0],
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+
+                // Academic Quiz Chart
+                const academicDates = data.academic_quiz.map(d => d.date);
+                const academicScores = data.academic_quiz.map(d => (d.score / d.total) * 100);
+                
+                new Chart(document.getElementById('academicQuizChart'), {
+                    type: 'line',
+                    data: {
+                        labels: academicDates.length > 0 ? academicDates : ['No data yet'],
+                        datasets: [{
+                            label: 'Score (%)',
+                            data: academicScores.length > 0 ? academicScores : [0],
+                            borderColor: '#2196F3',
+                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+
+                // Wellbeing Chart
+                const wellbeingDates = data.wellbeing.map(d => d.date);
+                const wellbeingScores = data.wellbeing.map(d => d.score);
+                
+                new Chart(document.getElementById('wellbeingChart'), {
+                    type: 'line',
+                    data: {
+                        labels: wellbeingDates.length > 0 ? wellbeingDates : ['No data yet'],
+                        datasets: [{
+                            label: 'Wellbeing Score',
+                            data: wellbeingScores.length > 0 ? wellbeingScores : [0],
+                            borderColor: '#9C27B0',
+                            backgroundColor: 'rgba(156, 39, 176, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(err => console.error('Error loading graph data:', err));
+    </script>
 </body>
 </html>
