@@ -97,6 +97,7 @@ def courses():
         JOIN courses c ON ec.course_id = c.id
         WHERE ec.student_id = ?
         ORDER BY ec.enrolled_at DESC
+        LIMIT 3
     ''', (student_id,)).fetchall()
     
     conn.close()
