@@ -9,19 +9,37 @@
 <body>
     <div class="app-container">
         <nav class="sidebar">
-            <div class="logo">
-                <h2>🎓 ForgeEd</h2>
-                <p>AI-Enhanced Learning</p>
+            <div class="sidebar-logo">
+                <h2>ForgeEd</h2>
+                <p>AI-Enhanced LMS</p>
             </div>
-            <ul class="nav-links">
-                <li><a href="/dashboard">📊 Dashboard</a></li>
-                <li><a href="/courses">📚 My Courses</a></li>
-                <li><a href="/career-learning">🎯 Career Learning</a></li>
-                <li><a href="/quiz" class="active">📝 Daily Quiz</a></li>
-                <li><a href="/wellbeing">💚 Wellbeing</a></li>
-                <li><a href="/slu-gpt">💬 SLU GPT</a></li>
-                <li><a href="/logout">🚪 Logout</a></li>
-            </ul>
+            
+            <div class="sidebar-nav">
+                <a href="/dashboard" class="nav-item">
+                    <span>🏠</span> Dashboard
+                </a>
+                <a href="/courses" class="nav-item">
+                    <span>📚</span> My Courses
+                </a>
+                <a href="/career-learning" class="nav-item">
+                    <span>🎯</span> Career Learning
+                </a>
+                <a href="/quiz" class="nav-item active">
+                    <span>✍️</span> Quizzes
+                </a>
+                <a href="/wellbeing" class="nav-item">
+                    <span>💚</span> Wellbeing
+                </a>
+                <a href="/slu-gpt" class="nav-item">
+                    <span>🤖</span> SLU GPT
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
         </nav>
 
         <main class="main-content">
