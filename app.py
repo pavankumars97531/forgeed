@@ -105,6 +105,7 @@ def add_student():
     
     data = request.json
     conn = get_db()
+    student_id = None
     
     try:
         cursor = conn.execute('''
@@ -114,15 +115,24 @@ def add_student():
               data.get('educational_background', ''), data.get('career_goal', '')))
         
         student_id = cursor.lastrowid
-        
-        from generate_roadmap import generate_personalized_roadmap
-        generate_personalized_roadmap(student_id, data.get('career_goal', ''))
-        
         conn.commit()
         conn.close()
+        
+        try:
+            from generate_roadmap import generate_personalized_roadmap
+            generate_personalized_roadmap(student_id, data.get('career_goal', ''))
+        except Exception as roadmap_error:
+            conn2 = get_db()
+            conn2.execute('DELETE FROM students WHERE id = ?', (student_id,))
+            conn2.commit()
+            conn2.close()
+            return jsonify({'success': False, 'error': f'Failed to generate roadmap: {str(roadmap_error)}'}), 400
+        
         return jsonify({'success': True, 'student_id': student_id})
     except Exception as e:
-        conn.close()
+        if conn:
+            conn.rollback()
+            conn.close()
         return jsonify({'success': False, 'error': str(e)}), 400
 
 @app.route('/api/admin/students/<int:student_id>', methods=['DELETE'])
@@ -637,8 +647,10 @@ def get_ai_course_recommendations(student_id):
     if not available_list:
         return []
     
+    not_enrolled_courses = [c for c in available_courses if c['course_code'] not in enrolled_codes_list]
+    
     if not client:
-        return list(available_courses[:3])
+        return [dict(c) for c in not_enrolled_courses[:3]]
     
     prompt = f"""Based on this career goal: "{student['career_goal']}"
 Student's educational background: "{student.get('educational_background') or 'Not specified'}"
@@ -667,10 +679,10 @@ Return ONLY a JSON array of course codes, e.g., ["CS-5100", "IS-6200", "DS-6300"
         
         recommended_codes = json.loads(recs_json)
         
-        recommended_courses = [c for c in available_courses if c['course_code'] in recommended_codes]
+        recommended_courses = [dict(c) for c in available_courses if c['course_code'] in recommended_codes]
         return recommended_courses[:3]
     except:
-        return list(available_courses[:3])
+        return [dict(c) for c in not_enrolled_courses[:3]]
 
 @app.route('/career-learning')
 def career_learning():
