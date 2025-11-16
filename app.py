@@ -75,8 +75,8 @@ def get_all_students():
         SELECT s.id, s.email, s.first_name, s.last_name, s.gpa, s.educational_background, 
                s.career_goal, s.created_at,
                (SELECT AVG(total_score) FROM wellbeing_assessments WHERE student_id = s.id) as avg_wellbeing
-        FROM students 
-        WHERE is_admin = 0
+        FROM students s
+        WHERE s.is_admin = 0
         ORDER BY s.created_at DESC
     ''').fetchall()
     
@@ -653,7 +653,7 @@ def get_ai_course_recommendations(student_id):
         return [dict(c) for c in not_enrolled_courses[:3]]
     
     prompt = f"""Based on this career goal: "{student['career_goal']}"
-Student's educational background: "{student.get('educational_background') or 'Not specified'}"
+Student's educational background: "{student['educational_background'] if student['educational_background'] else 'Not specified'}"
 
 Available courses at the university:
 {chr(10).join(available_list[:20])}
