@@ -75,8 +75,8 @@ def get_all_students():
         SELECT s.id, s.email, s.first_name, s.last_name, s.gpa, s.educational_background, 
                s.career_goal, s.created_at,
                (SELECT AVG(total_score) FROM wellbeing_assessments WHERE student_id = s.id) as avg_wellbeing
-        FROM students 
-        WHERE is_admin = 0
+        FROM students s
+        WHERE s.is_admin = 0
         ORDER BY s.created_at DESC
     ''').fetchall()
     
