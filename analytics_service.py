@@ -256,7 +256,10 @@ def get_subject_performance(student_id):
             subject = q.get('subject', 'Unknown')
             # ONLY include if this subject is in enrolled courses
             if subject in enrolled_course_names:
-                subject_scores[subject].append(score / len(quiz_questions) * 100)
+                # Convert to GPA scale (0-4.0)
+                percentage = score / len(quiz_questions) * 100
+                gpa_value = (percentage / 100) * 4.0
+                subject_scores[subject].append(gpa_value)
     
     # Calculate current and predicted for each subject
     subjects = []
@@ -267,9 +270,9 @@ def get_subject_performance(student_id):
         subjects.append(subject)
         
         if scores:
-            # Current: average of all scores
+            # Current: average of all scores (GPA scale)
             current_avg = sum(scores) / len(scores)
-            current_grades.append(round(current_avg, 1))
+            current_grades.append(round(current_avg, 2))
             
             # Predicted: trend analysis (if improving, add bonus; if declining, subtract)
             if len(scores) >= 3:
@@ -280,11 +283,11 @@ def get_subject_performance(student_id):
             else:
                 predicted = current_avg
             
-            predicted_grades.append(round(min(100, max(0, predicted)), 1))
+            predicted_grades.append(round(min(4.0, max(0, predicted)), 2))
         else:
-            # No quiz data for this course yet - use default
-            current_grades.append(85)
-            predicted_grades.append(87)
+            # No quiz data for this course yet - use default GPA values
+            current_grades.append(3.4)
+            predicted_grades.append(3.5)
     
     return {
         "subjects": subjects,
