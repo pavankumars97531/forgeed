@@ -1,11 +1,11 @@
 :root {
     /* Theme Colors - Coordinated across dashboard */
     --color-academic: #2196F3;
-    --color-academic-light: rgba(33, 150, 243, 0.1);
+    --color-academic-light: rgba(33, 150, 243, 0.08);
     --color-career: #9b7fd7;
-    --color-career-light: rgba(155, 127, 215, 0.1);
+    --color-career-light: rgba(155, 127, 215, 0.08);
     --color-wellbeing: #f4a261;
-    --color-wellbeing-light: rgba(244, 162, 97, 0.1);
+    --color-wellbeing-light: rgba(244, 162, 97, 0.08);
 }
 
 * {
@@ -386,19 +386,19 @@ body {
 
 /* Coordinated theme colors for insights */
 .insight-card.academic {
-    background: rgba(33, 150, 243, 0.08);
+    background: var(--color-academic-light);
     border-color: var(--color-academic);
     color: #0d47a1;
 }
 
 .insight-card.career {
-    background: rgba(155, 127, 215, 0.08);
+    background: var(--color-career-light);
     border-color: var(--color-career);
     color: #5e35b1;
 }
 
 .insight-card.wellbeing {
-    background: rgba(244, 162, 97, 0.08);
+    background: var(--color-wellbeing-light);
     border-color: var(--color-wellbeing);
     color: #d84315;
 }

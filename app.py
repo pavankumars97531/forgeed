@@ -422,7 +422,17 @@ Keep each insight under 120 characters."""
                 insights_json = insights_json[4:]
             insights_json = insights_json.strip()
         
-        return json.loads(insights_json)
+        insights = json.loads(insights_json)
+        
+        # Normalize types to lowercase and validate
+        for insight in insights:
+            if 'type' in insight:
+                insight['type'] = insight['type'].lower()
+                # Fallback to 'academic' if type is not recognized
+                if insight['type'] not in ['academic', 'career', 'wellbeing']:
+                    insight['type'] = 'academic'
+        
+        return insights
     except:
         return [
             {"type": "academic", "text": f"Your {gpa:.2f} GPA shows strong academic performance. Keep it up!"},
