@@ -653,7 +653,7 @@ def get_ai_course_recommendations(student_id):
         return [dict(c) for c in not_enrolled_courses[:3]]
     
     prompt = f"""Based on this career goal: "{student['career_goal']}"
-Student's educational background: "{student.get('educational_background') or 'Not specified'}"
+Student's educational background: "{student['educational_background'] if student['educational_background'] else 'Not specified'}"
 
 Available courses at the university:
 {chr(10).join(available_list[:20])}
@@ -1131,13 +1131,22 @@ Provide brief feedback (2-3 sentences) on what they should review and how to imp
         WHERE id = ?
     ''', (json.dumps(answers), score, 10, ai_feedback, quiz['id']))
     
+    # Also mark the roadmap day as complete
+    day_number = quiz['day_number']
+    conn.execute('''
+        UPDATE daily_roadmap 
+        SET is_completed = 1, completed_at = CURRENT_TIMESTAMP
+        WHERE student_id = ? AND day_number = ?
+    ''', (student_id, day_number))
+    
     conn.commit()
     conn.close()
     
     return jsonify({
         'score': score,
         'total': 10,
-        'ai_feedback': ai_feedback
+        'ai_feedback': ai_feedback,
+        'day_completed': True
     })
 
 @app.route('/api/generate-academic-quiz', methods=['POST'])

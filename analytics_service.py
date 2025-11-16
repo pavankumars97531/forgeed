@@ -250,8 +250,15 @@ def get_subject_performance(student_id):
     
     # Parse quiz data for subject scores - ONLY for enrolled courses
     for quiz in quizzes:
-        questions = json.loads(quiz['questions'])
-        quiz_questions = questions.get('questions', [])
+        try:
+            questions = json.loads(quiz['questions'])
+            # Handle both formats: array or object with 'questions' key
+            if isinstance(questions, list):
+                quiz_questions = questions
+            else:
+                quiz_questions = questions.get('questions', [])
+        except (json.JSONDecodeError, TypeError):
+            quiz_questions = []
         
         # Track which questions were answered correctly
         total_q = quiz['total_questions']
