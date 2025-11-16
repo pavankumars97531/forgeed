@@ -55,6 +55,12 @@ Preferred communication style: Simple, everyday language.
 - **Component-based CSS**: Custom CSS in `static/style.css` provides consistent styling across the application with a sidebar navigation pattern and card-based layouts.
 - **JavaScript for Interactivity**: Client-side JavaScript handles dynamic features like quiz submission, chat interactions, day-locking UI, wellbeing sliders, and real-time UI updates without page reloads.
 - **Chart.js Integration**: Line graphs on the dashboard use Chart.js (loaded via CDN) to visualize Career Quiz scores, Academic Quiz scores, and Wellbeing scores over the last 7 days.
+- **Color-Coordinated Design System**: Dashboard uses a unified color theme managed via CSS variables to ensure visual consistency across all tracking categories:
+  - **Academic/GPA** (Blue #2196F3): Stat cards, Academic Quiz graph line, and academic insights
+  - **Career** (Purple #9b7fd7): Stat cards, Career Quiz graph line, and career insights
+  - **Wellbeing** (Orange #f4a261): Stat cards, Wellbeing graph line, and wellbeing insights
+  - Theme colors defined as CSS variables (`--color-academic`, `--color-career`, `--color-wellbeing`) with light variants for backgrounds
+  - AI-generated insights are categorized by topic (academic/career/wellbeing) and rendered with matching color coding
 
 ### Security Considerations
 - **Plain-text Password Storage**: The current implementation stores passwords in plain text in the database. This is a development-stage decision that should be replaced with hashed passwords (bcrypt/argon2) for production.
