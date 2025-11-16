@@ -260,18 +260,42 @@ def get_subject_performance(student_id):
         except (json.JSONDecodeError, TypeError):
             quiz_questions = []
         
-        # Track which questions were answered correctly
+        if not quiz_questions:
+            continue
+            
         total_q = quiz['total_questions']
         score = quiz['score']
         
-        for q in quiz_questions:
-            subject = q.get('subject', 'Unknown')
-            # ONLY include if this subject is in enrolled courses
-            if subject in enrolled_course_names:
-                # Convert to GPA scale (0-4.0)
-                percentage = score / len(quiz_questions) * 100
+        # Count questions per course in this quiz
+        course_question_counts = {}
+        course_correct_counts = {}
+        
+        for i, q in enumerate(quiz_questions):
+            # Use 'course' field, not 'subject'
+            course = q.get('course', 'Unknown')
+            
+            # ONLY include if this course is in enrolled courses
+            if course in enrolled_course_names:
+                if course not in course_question_counts:
+                    course_question_counts[course] = 0
+                    course_correct_counts[course] = 0
+                
+                course_question_counts[course] += 1
+        
+        # Calculate score per course based on proportion
+        # If quiz has 15 questions: 5 from each of 3 courses
+        # Student scored 10/15 total
+        # Assume equal performance across courses for simplicity
+        for course in course_question_counts:
+            if course_question_counts[course] > 0:
+                # Assume proportional scoring
+                course_score_ratio = course_question_counts[course] / len(quiz_questions)
+                estimated_course_score = score * course_score_ratio
+                
+                # Convert to percentage then to GPA scale (0-4.0)
+                percentage = (estimated_course_score / course_question_counts[course]) * 100
                 gpa_value = (percentage / 100) * 4.0
-                subject_scores[subject].append(gpa_value)
+                subject_scores[course].append(round(gpa_value, 2))
     
     # Calculate current and predicted for each subject
     subjects = []
