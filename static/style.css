@@ -587,6 +587,71 @@ body {
     color: #333;
 }
 
+/* Formatted content styling for ChatGPT responses */
+.message-content p {
+    margin: 0 0 12px 0;
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.message-content h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 16px 0 10px 0;
+    color: #333;
+}
+
+.message-content h3:first-child {
+    margin-top: 0;
+}
+
+.message-content ul,
+.message-content ol {
+    margin: 12px 0;
+    padding-left: 24px;
+}
+
+.message-content li {
+    margin: 6px 0;
+    line-height: 1.5;
+}
+
+.message-content code {
+    background: rgba(0, 0, 0, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+}
+
+.message-content pre {
+    background: #2d2d2d;
+    color: #f8f8f2;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 12px 0;
+}
+
+.message-content pre code {
+    background: none;
+    padding: 0;
+    color: #f8f8f2;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.message-content strong {
+    font-weight: 600;
+    color: #222;
+}
+
+.message.user .message-content strong {
+    color: #fff;
+}
+
 .chat-input {
     padding: 24px;
     border-top: 1px solid #e0e0e0;

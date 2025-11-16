@@ -97,7 +97,7 @@
                             <span class="message-author">SLU GPT</span>
                             <span class="message-time">{{ chat['created_at'] }}</span>
                         </div>
-                        <div class="message-content">{{ chat['response'] }}</div>
+                        <div class="message-content formatted-content">{{ chat['response'] }}</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -113,6 +113,77 @@
     </div>
     
     <script>
+        // Format text with markdown-like styling
+        function formatText(text) {
+            if (!text) return '';
+            
+            let formatted = text;
+            
+            // Handle code blocks with triple backticks
+            formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, function(match, lang, code) {
+                return `<pre><code>${escapeHtml(code.trim())}</code></pre>`;
+            });
+            
+            // Handle inline code
+            formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // Handle bold text
+            formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            
+            // Handle headers (### Header)
+            formatted = formatted.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^## (.+)$/gm, '<h3>$1</h3>');
+            formatted = formatted.replace(/^# (.+)$/gm, '<h3>$1</h3>');
+            
+            // Split by double line breaks for paragraphs
+            const paragraphs = formatted.split('\n\n');
+            formatted = paragraphs.map(para => {
+                // Check if it's a list
+                const lines = para.split('\n');
+                const isBulletList = lines.every(line => line.trim().match(/^[-*•]\s/) || line.trim() === '');
+                const isNumberedList = lines.every(line => line.trim().match(/^\d+\.\s/) || line.trim() === '');
+                
+                if (isBulletList) {
+                    const items = lines
+                        .filter(line => line.trim())
+                        .map(line => line.trim().replace(/^[-*•]\s/, ''))
+                        .map(item => `<li>${item}</li>`)
+                        .join('');
+                    return `<ul>${items}</ul>`;
+                } else if (isNumberedList) {
+                    const items = lines
+                        .filter(line => line.trim())
+                        .map(line => line.trim().replace(/^\d+\.\s/, ''))
+                        .map(item => `<li>${item}</li>`)
+                        .join('');
+                    return `<ol>${items}</ol>`;
+                } else if (!para.match(/<(pre|code|h3|ul|ol)/)) {
+                    // Single line breaks within paragraph
+                    const withBreaks = para.split('\n').join('<br>');
+                    return para.trim() ? `<p>${withBreaks}</p>` : '';
+                } else {
+                    return para;
+                }
+            }).join('');
+            
+            return formatted;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Format existing messages on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const formattedContents = document.querySelectorAll('.formatted-content');
+            formattedContents.forEach(element => {
+                const originalText = element.textContent;
+                element.innerHTML = formatText(originalText);
+            });
+        });
+        
         async function sendMessage() {
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
@@ -128,7 +199,7 @@
                     <span class="message-author">You</span>
                     <span class="message-time">Just now</span>
                 </div>
-                <div class="message-content">${message}</div>
+                <div class="message-content">${escapeHtml(message)}</div>
             `;
             messagesDiv.appendChild(userMessage);
             
@@ -157,7 +228,8 @@
                 
                 const data = await response.json();
                 
-                loadingMessage.querySelector('.message-content').textContent = data.response;
+                // Format the response with proper styling
+                loadingMessage.querySelector('.message-content').innerHTML = formatText(data.response);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
             } catch (error) {
                 loadingMessage.querySelector('.message-content').textContent = 'Sorry, I encountered an error. Please try again.';
