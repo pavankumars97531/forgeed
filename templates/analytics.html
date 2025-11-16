@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Analytics - ForgeEd</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <h2>ForgeEd</h2>
+                <p>AI-Enhanced LMS</p>
+            </div>
+            
+            <div class="sidebar-nav">
+                <a href="/dashboard" class="nav-item">
+                    <span>🏠</span> Dashboard
+                </a>
+                <a href="/courses" class="nav-item">
+                    <span>📚</span> My Courses
+                </a>
+                <a href="/career-learning" class="nav-item">
+                    <span>🎯</span> Career Learning
+                </a>
+                <a href="/quiz" class="nav-item">
+                    <span>✍️</span> Quizzes
+                </a>
+                <a href="/wellbeing" class="nav-item">
+                    <span>💚</span> Wellbeing
+                </a>
+                <a href="/analytics" class="nav-item active">
+                    <span>📊</span> Student Analytics
+                </a>
+                <a href="/slu-gpt" class="nav-item">
+                    <span>🤖</span> SLU GPT
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+        </nav>
+        
+        <main class="main-content">
+            <div class="analytics-header">
+                <h2>My Progress & Analytics</h2>
+                <p>AI-powered insights into your academic performance</p>
+            </div>
+            
+            <!-- Top 4 Metric Cards -->
+            <div class="analytics-metrics">
+                <div class="metric-card gpa-card">
+                    <div class="metric-icon">🎯</div>
+                    <div class="metric-value">{{ "%.2f"|format(current_gpa) }}</div>
+                    <div class="metric-label">Current GPA</div>
+                </div>
+                
+                <div class="metric-card predicted-card">
+                    <div class="metric-icon">📈</div>
+                    <div class="metric-value">{{ "%.2f"|format(predicted_gpa) }}</div>
+                    <div class="metric-label">Predicted</div>
+                    <div class="metric-sublabel">End of Semester</div>
+                </div>
+                
+                <div class="metric-card confidence-card">
+                    <div class="metric-icon">😊</div>
+                    <div class="metric-value">{{ confidence_level }}%</div>
+                    <div class="metric-label">Confidence Level</div>
+                </div>
+                
+                <div class="metric-card risk-card risk-{{ risk_level.lower() }}">
+                    <div class="metric-icon">
+                        {% if risk_level == 'Low' %}✅
+                        {% elif risk_level == 'Medium' %}⚠️
+                        {% else %}🔴{% endif %}
+                    </div>
+                    <div class="metric-value">{{ risk_level }}</div>
+                    <div class="metric-label">Risk Level</div>
+                </div>
+            </div>
+            
+            <!-- AI-Powered Predictions -->
+            <div class="predictions-section">
+                <h3>🤖 AI-Powered Predictions</h3>
+                <div class="predictions-list">
+                    {% for prediction in ai_predictions %}
+                    <div class="prediction-item">
+                        <div class="prediction-icon">{{ prediction.icon }}</div>
+                        <div class="prediction-content">
+                            <h4>{{ prediction.title }}</h4>
+                            <p>{{ prediction.description }}</p>
+                            <div class="prediction-progress">
+                                <div class="progress-bar" style="width: {{ prediction.progress }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="charts-row">
+                <!-- GPA Progression -->
+                <div class="chart-container">
+                    <h3>GPA Progression</h3>
+                    <canvas id="gpaProgressionChart"></canvas>
+                </div>
+                
+                <!-- Current vs Predicted Performance -->
+                <div class="chart-container">
+                    <h3>Current vs Predicted Performance</h3>
+                    <canvas id="performanceComparisonChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- AI Analysis Sections -->
+            <div class="ai-analysis-section">
+                <!-- Strengths -->
+                <div class="analysis-card strengths-card">
+                    <div class="analysis-header">
+                        <span class="analysis-icon">✓</span>
+                        <h3>Strengths</h3>
+                    </div>
+                    <div class="analysis-items">
+                        {% for strength in strengths %}
+                        <div class="analysis-item">{{ strength }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Areas for Improvement -->
+                <div class="analysis-card improvements-card">
+                    <div class="analysis-header">
+                        <span class="analysis-icon">△</span>
+                        <h3>Areas for Improvement</h3>
+                    </div>
+                    <div class="analysis-items">
+                        {% for improvement in improvements %}
+                        <div class="analysis-item">{{ improvement }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- AI Recommendations -->
+                <div class="analysis-card recommendations-card">
+                    <div class="analysis-header">
+                        <span class="analysis-icon">💡</span>
+                        <h3>AI Recommendations</h3>
+                    </div>
+                    <div class="analysis-items">
+                        {% for recommendation in recommendations %}
+                        <div class="analysis-item">{{ recommendation }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // GPA Progression Chart
+        const gpaData = {{ gpa_history|tojson }};
+        const gpaCtx = document.getElementById('gpaProgressionChart').getContext('2d');
+        new Chart(gpaCtx, {
+            type: 'line',
+            data: {
+                labels: gpaData.dates,
+                datasets: [{
+                    label: 'GPA',
+                    data: gpaData.values,
+                    borderColor: '#4A90E2',
+                    backgroundColor: 'rgba(74, 144, 226, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0,
+                        max: 4,
+                        ticks: {
+                            stepSize: 0.5
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Current vs Predicted Performance Chart
+        const perfData = {{ performance_data|tojson }};
+        const perfCtx = document.getElementById('performanceComparisonChart').getContext('2d');
+        new Chart(perfCtx, {
+            type: 'bar',
+            data: {
+                labels: perfData.subjects,
+                datasets: [
+                    {
+                        label: 'Current Grade',
+                        data: perfData.current,
+                        backgroundColor: '#4A90E2'
+                    },
+                    {
+                        label: 'Predicted Grade',
+                        data: perfData.predicted,
+                        backgroundColor: '#50C878'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

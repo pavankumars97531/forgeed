@@ -5,6 +5,7 @@ from datetime import datetime, date
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
+import analytics_service
 
 load_dotenv()
 
@@ -18,6 +19,9 @@ if not api_key:
     client = None
 else:
     client = OpenAI(api_key=api_key)
+
+# Set OpenAI client for analytics service
+analytics_service.set_openai_client(client)
 
 init_db()
 
@@ -104,6 +108,48 @@ def dashboard():
                          insights=insights,
                          career_quiz_today=career_quiz_today,
                          academic_quiz_today=academic_quiz_today)
+
+@app.route('/analytics')
+def analytics():
+    if 'student_id' not in session:
+        return redirect(url_for('index'))
+    
+    student_id = session['student_id']
+    conn = get_db()
+    student = conn.execute('SELECT * FROM students WHERE id = ?', (student_id,)).fetchone()
+    conn.close()
+    
+    # Calculate metrics
+    current_gpa = student['gpa']
+    predicted_gpa = analytics_service.calculate_predicted_gpa(student_id, current_gpa)
+    confidence_level = analytics_service.calculate_confidence_level(student_id)
+    risk_level = analytics_service.calculate_risk_level(student_id)
+    
+    # Get chart data
+    gpa_history = analytics_service.get_gpa_history(student_id)
+    performance_data = analytics_service.get_subject_performance(student_id)
+    
+    # Get AI analysis
+    ai_analysis = analytics_service.generate_ai_analysis(
+        student_id, current_gpa, predicted_gpa, confidence_level, risk_level
+    )
+    
+    # Get AI predictions
+    ai_predictions = analytics_service.generate_ai_predictions(
+        student_id, current_gpa, predicted_gpa, confidence_level
+    )
+    
+    return render_template('analytics.html',
+                         current_gpa=current_gpa,
+                         predicted_gpa=predicted_gpa,
+                         confidence_level=confidence_level,
+                         risk_level=risk_level,
+                         gpa_history=gpa_history,
+                         performance_data=performance_data,
+                         strengths=ai_analysis.get('strengths', []),
+                         improvements=ai_analysis.get('improvements', []),
+                         recommendations=ai_analysis.get('recommendations', []),
+                         ai_predictions=ai_predictions)
 
 @app.route('/courses')
 def courses():
