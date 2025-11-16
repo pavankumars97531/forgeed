@@ -216,7 +216,7 @@ def get_subject_performance(student_id):
     
     # Get enrolled courses
     enrolled = conn.execute('''
-        SELECT c.name, ec.grade 
+        SELECT c.course_name, ec.grade 
         FROM enrolled_courses ec
         JOIN courses c ON ec.course_id = c.id
         WHERE ec.student_id = ?
@@ -338,7 +338,7 @@ def generate_ai_analysis(student_id, gpa, predicted_gpa, confidence_level, risk_
     
     # Get enrolled courses
     courses = conn.execute('''
-        SELECT c.name FROM enrolled_courses ec
+        SELECT c.course_name FROM enrolled_courses ec
         JOIN courses c ON ec.course_id = c.id
         WHERE ec.student_id = ?
     ''', (student_id,)).fetchall()
@@ -349,7 +349,7 @@ def generate_ai_analysis(student_id, gpa, predicted_gpa, confidence_level, risk_
     conn.close()
     
     # Build context for AI
-    course_list = ", ".join([c['name'] for c in courses]) if courses else "No courses enrolled"
+    course_list = ", ".join([c['course_name'] for c in courses]) if courses else "No courses enrolled"
     career_goal = student['career_goal'] if student and student['career_goal'] else "Not specified"
     
     quiz_summary = f"{len(recent_quizzes)} recent quizzes" if recent_quizzes else "No quiz data"
