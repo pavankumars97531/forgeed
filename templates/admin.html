@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ForgeEd</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <h2>ForgeEd</h2>
+                <p>Admin Panel</p>
+            </div>
+            
+            <div class="sidebar-nav">
+                <a href="#students" class="nav-item active" onclick="showSection('students')">
+                    <span>👥</span> Manage Students
+                </a>
+                <a href="#courses" class="nav-item" onclick="showSection('courses')">
+                    <span>📚</span> Manage Courses
+                </a>
+                <a href="#info" class="nav-item" onclick="showSection('info')">
+                    <span>📊</span> Students Info
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">
+                    <span>🚪</span> Logout
+                </a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1>🔧 Admin Dashboard</h1>
+                <p>Manage students, courses, and monitor student performance</p>
+            </div>
+
+            <div id="students-section" class="admin-section">
+                <div class="section-card">
+                    <h2>👥 Add New Student</h2>
+                    <form id="addStudentForm" class="admin-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name *</label>
+                                <input type="text" name="first_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name *</label>
+                                <input type="text" name="last_name" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email (Login ID) *</label>
+                                <input type="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Password *</label>
+                                <input type="password" name="password" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Educational Background</label>
+                            <textarea name="educational_background" rows="3" placeholder="e.g., Bachelor's in Computer Science from XYZ University"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Career Goal *</label>
+                            <input type="text" name="career_goal" required placeholder="e.g., Data Scientist, Software Engineer">
+                        </div>
+                        <button type="submit" class="btn-primary">Add Student</button>
+                    </form>
+                </div>
+
+                <div class="section-card">
+                    <h2>📋 Current Students</h2>
+                    <div id="studentsList" class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Career Goal</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody">
+                                <tr><td colspan="4" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="courses-section" class="admin-section" style="display: none;">
+                <div class="section-card">
+                    <h2>📚 Add New Course</h2>
+                    <form id="addCourseForm" class="admin-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Course Code *</label>
+                                <input type="text" name="course_code" required placeholder="e.g., CS-5100">
+                            </div>
+                            <div class="form-group">
+                                <label>Course Name *</label>
+                                <input type="text" name="course_name" required placeholder="e.g., Machine Learning">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Faculty Name</label>
+                                <input type="text" name="faculty_name" placeholder="e.g., Dr. John Smith">
+                            </div>
+                            <div class="form-group">
+                                <label>Intake Term</label>
+                                <input type="text" name="intake_term" placeholder="e.g., Fall 2024, Spring 2025">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Credits</label>
+                                <input type="number" name="credits" value="3" min="1" max="6">
+                            </div>
+                            <div class="form-group">
+                                <label>Semester</label>
+                                <input type="text" name="semester" placeholder="e.g., Fall 2024">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <textarea name="description" rows="3" placeholder="Course description..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary">Add Course</button>
+                    </form>
+                </div>
+
+                <div class="section-card">
+                    <h2>📋 Available Courses</h2>
+                    <div id="coursesList" class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                    <th>Faculty</th>
+                                    <th>Intake Term</th>
+                                    <th>Credits</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coursesTableBody">
+                                <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="info-section" class="admin-section" style="display: none;">
+                <div class="section-card">
+                    <h2>📊 Students Performance Overview</h2>
+                    <div id="studentsInfo" class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>GPA</th>
+                                    <th>Wellbeing</th>
+                                    <th>Risk Level</th>
+                                    <th>Background</th>
+                                    <th>Career Goal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsInfoTableBody">
+                                <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let studentsData = [];
+        let coursesData = [];
+
+        function showSection(section) {
+            document.querySelectorAll('.admin-section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(section + '-section').style.display = 'block';
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        async function loadStudents() {
+            try {
+                const response = await fetch('/api/admin/students');
+                studentsData = await response.json();
+                renderStudentsTable();
+                renderStudentsInfo();
+            } catch (error) {
+                console.error('Error loading students:', error);
+            }
+        }
+
+        function renderStudentsTable() {
+            const tbody = document.getElementById('studentsTableBody');
+            if (studentsData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No students found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = studentsData.map(student => `
+                <tr>
+                    <td>${student.first_name} ${student.last_name}</td>
+                    <td>${student.email}</td>
+                    <td>${student.career_goal || 'Not set'}</td>
+                    <td>
+                        <button class="btn-delete" onclick="deleteStudent(${student.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderStudentsInfo() {
+            const tbody = document.getElementById('studentsInfoTableBody');
+            if (studentsData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center">No students found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = studentsData.map(student => `
+                <tr>
+                    <td><strong>${student.first_name} ${student.last_name}</strong></td>
+                    <td>${student.email}</td>
+                    <td><span class="gpa-badge">${student.gpa.toFixed(2)}</span></td>
+                    <td>${student.avg_wellbeing || 'N/A'}</td>
+                    <td><span class="risk-badge risk-${student.risk_level.toLowerCase()}">${student.risk_level}</span></td>
+                    <td>${student.educational_background || 'Not provided'}</td>
+                    <td>${student.career_goal || 'Not set'}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadCourses() {
+            try {
+                const response = await fetch('/api/admin/courses');
+                coursesData = await response.json();
+                renderCoursesTable();
+            } catch (error) {
+                console.error('Error loading courses:', error);
+            }
+        }
+
+        function renderCoursesTable() {
+            const tbody = document.getElementById('coursesTableBody');
+            if (coursesData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No courses found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = coursesData.map(course => `
+                <tr>
+                    <td><strong>${course.course_code}</strong></td>
+                    <td>${course.course_name}</td>
+                    <td>${course.faculty_name || 'TBD'}</td>
+                    <td>${course.intake_term || 'TBD'}</td>
+                    <td>${course.credits}</td>
+                    <td>
+                        <button class="btn-delete" onclick="deleteCourse(${course.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/api/admin/students', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Student added successfully!');
+                    e.target.reset();
+                    loadStudents();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error adding student: ' + error.message);
+            }
+        });
+
+        document.getElementById('addCourseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/api/admin/courses', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Course added successfully!');
+                    e.target.reset();
+                    loadCourses();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error adding course: ' + error.message);
+            }
+        });
+
+        async function deleteStudent(id) {
+            if (!confirm('Are you sure you want to delete this student?')) return;
+
+            try {
+                const response = await fetch(`/api/admin/students/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Student deleted successfully!');
+                    loadStudents();
+                }
+            } catch (error) {
+                alert('Error deleting student: ' + error.message);
+            }
+        }
+
+        async function deleteCourse(id) {
+            if (!confirm('Are you sure you want to delete this course?')) return;
+
+            try {
+                const response = await fetch(`/api/admin/courses/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Course deleted successfully!');
+                    loadCourses();
+                }
+            } catch (error) {
+                alert('Error deleting course: ' + error.message);
+            }
+        }
+
+        loadStudents();
+        loadCourses();
+    </script>
+</body>
+</html>
