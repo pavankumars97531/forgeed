@@ -119,8 +119,8 @@ def add_student():
         conn.close()
         
         try:
-            from generate_roadmap import generate_personalized_roadmap
-            generate_personalized_roadmap(student_id, data.get('career_goal', ''))
+            from generate_roadmap import generate_90day_roadmap
+            generate_90day_roadmap(student_id)
         except Exception as roadmap_error:
             conn2 = get_db()
             conn2.execute('DELETE FROM students WHERE id = ?', (student_id,))
