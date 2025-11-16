@@ -619,7 +619,7 @@ def get_ai_course_recommendations(student_id):
     conn = get_db()
     student = conn.execute('SELECT * FROM students WHERE id = ?', (student_id,)).fetchone()
     
-    available_courses = conn.execute('SELECT * FROM available_courses').fetchall()
+    available_courses = conn.execute('SELECT * FROM courses').fetchall()
     
     enrolled_codes = conn.execute('''
         SELECT c.course_code
@@ -631,7 +631,7 @@ def get_ai_course_recommendations(student_id):
     conn.close()
     
     enrolled_codes_list = [c['course_code'] for c in enrolled_codes]
-    available_list = [f"{c['course_code']}: {c['course_name']} - {c['description']}" 
+    available_list = [f"{c['course_code']}: {c['course_name']} ({c['faculty_name'] or 'TBD'}) - {c['description'] or ''} [Intake: {c['intake_term'] or 'TBD'}]" 
                       for c in available_courses if c['course_code'] not in enrolled_codes_list]
     
     if not available_list:
@@ -641,18 +641,20 @@ def get_ai_course_recommendations(student_id):
         return list(available_courses[:3])
     
     prompt = f"""Based on this career goal: "{student['career_goal']}"
+Student's educational background: "{student.get('educational_background') or 'Not specified'}"
 
-Available courses:
-{chr(10).join(available_list[:15])}
+Available courses at the university:
+{chr(10).join(available_list[:20])}
 
-Recommend exactly 3 courses that best align with the career goal.
-Return ONLY a JSON array of course codes, e.g., ["IS 6100", "IS 6200", "IS 6300"]"""
+Recommend exactly 3 courses that best align with the career goal and educational background.
+Consider the faculty expertise and intake terms.
+Return ONLY a JSON array of course codes, e.g., ["CS-5100", "IS-6200", "DS-6300"]"""
 
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=100,
+            max_tokens=150,
             temperature=0.7
         )
         
