@@ -210,7 +210,7 @@ def get_gpa_history(student_id):
 
 def get_subject_performance(student_id):
     """
-    Get current and predicted performance for each subject
+    Get current and predicted performance for each subject - ONLY enrolled courses
     """
     conn = get_db()
     
@@ -221,6 +221,9 @@ def get_subject_performance(student_id):
         JOIN courses c ON ec.course_id = c.id
         WHERE ec.student_id = ?
     ''', (student_id,)).fetchall()
+    
+    # Create a list of enrolled course names
+    enrolled_course_names = [course['course_name'] for course in enrolled]
     
     # Get academic quiz history
     quizzes = conn.execute('''
@@ -233,17 +236,14 @@ def get_subject_performance(student_id):
     
     conn.close()
     
-    # Extract subject-wise performance
+    # Extract subject-wise performance - ONLY for enrolled courses
     subject_scores = {}
     
-    for quiz in quizzes:
-        questions = json.loads(quiz['questions'])
-        for q in questions.get('questions', []):
-            subject = q.get('subject', 'Unknown')
-            if subject not in subject_scores:
-                subject_scores[subject] = []
+    # Initialize only enrolled courses
+    for course_name in enrolled_course_names:
+        subject_scores[course_name] = []
     
-    # Parse quiz data for subject scores
+    # Parse quiz data for subject scores - ONLY for enrolled courses
     for quiz in quizzes:
         questions = json.loads(quiz['questions'])
         quiz_questions = questions.get('questions', [])
@@ -251,12 +251,11 @@ def get_subject_performance(student_id):
         # Track which questions were answered correctly
         total_q = quiz['total_questions']
         score = quiz['score']
-        # Assume proportional distribution
         
         for q in quiz_questions:
             subject = q.get('subject', 'Unknown')
-            if subject in subject_scores:
-                # Simplified: assume even distribution of score
+            # ONLY include if this subject is in enrolled courses
+            if subject in enrolled_course_names:
                 subject_scores[subject].append(score / len(quiz_questions) * 100)
     
     # Calculate current and predicted for each subject
@@ -265,33 +264,27 @@ def get_subject_performance(student_id):
     predicted_grades = []
     
     for subject, scores in subject_scores.items():
-        if not scores:
-            continue
-            
         subjects.append(subject)
         
-        # Current: average of all scores
-        current_avg = sum(scores) / len(scores)
-        current_grades.append(round(current_avg, 1))
-        
-        # Predicted: trend analysis (if improving, add bonus; if declining, subtract)
-        if len(scores) >= 3:
-            recent_avg = sum(scores[:3]) / 3
-            older_avg = sum(scores[-3:]) / 3
-            trend = recent_avg - older_avg
-            predicted = current_avg + (trend * 0.3)
+        if scores:
+            # Current: average of all scores
+            current_avg = sum(scores) / len(scores)
+            current_grades.append(round(current_avg, 1))
+            
+            # Predicted: trend analysis (if improving, add bonus; if declining, subtract)
+            if len(scores) >= 3:
+                recent_avg = sum(scores[:3]) / 3
+                older_avg = sum(scores[-3:]) / 3
+                trend = recent_avg - older_avg
+                predicted = current_avg + (trend * 0.3)
+            else:
+                predicted = current_avg
+            
+            predicted_grades.append(round(min(100, max(0, predicted)), 1))
         else:
-            predicted = current_avg
-        
-        predicted_grades.append(round(min(100, max(0, predicted)), 1))
-    
-    # If no subject data from quizzes, use enrolled courses
-    if not subjects and enrolled:
-        for course in enrolled[:4]:  # Limit to 4 for display
-            subjects.append(course['name'])
-            grade = course['grade'] if course['grade'] else 85
-            current_grades.append(grade)
-            predicted_grades.append(min(100, grade + 2))
+            # No quiz data for this course yet - use default
+            current_grades.append(85)
+            predicted_grades.append(87)
     
     return {
         "subjects": subjects,

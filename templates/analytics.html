@@ -84,25 +84,6 @@
                 </div>
             </div>
             
-            <!-- AI-Powered Predictions -->
-            <div class="predictions-section">
-                <h3>🤖 AI-Powered Predictions</h3>
-                <div class="predictions-list">
-                    {% for prediction in ai_predictions %}
-                    <div class="prediction-item">
-                        <div class="prediction-icon">{{ prediction.icon }}</div>
-                        <div class="prediction-content">
-                            <h4>{{ prediction.title }}</h4>
-                            <p>{{ prediction.description }}</p>
-                            <div class="prediction-progress">
-                                <div class="progress-bar" style="width: {{ prediction.progress }}%"></div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            
             <!-- Charts Section -->
             <div class="charts-row">
                 <!-- GPA Progression -->
