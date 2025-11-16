@@ -21,6 +21,8 @@ def init_db():
             completion_rate INTEGER DEFAULT 0,
             slu_gpt_sessions INTEGER DEFAULT 0,
             career_goal TEXT,
+            educational_background TEXT,
+            is_admin BOOLEAN DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -32,7 +34,8 @@ def init_db():
             course_name TEXT NOT NULL,
             credits INTEGER DEFAULT 3,
             description TEXT,
-            instructor TEXT,
+            faculty_name TEXT,
+            intake_term TEXT,
             semester TEXT
         )
     ''')
