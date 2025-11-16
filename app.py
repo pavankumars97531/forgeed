@@ -58,6 +58,130 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    if 'student_id' not in session or not session.get('is_admin'):
+        return redirect(url_for('index'))
+    
+    return render_template('admin.html')
+
+@app.route('/api/admin/students', methods=['GET'])
+def get_all_students():
+    if 'student_id' not in session or not session.get('is_admin'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    conn = get_db()
+    students = conn.execute('''
+        SELECT s.id, s.email, s.first_name, s.last_name, s.gpa, s.educational_background, 
+               s.career_goal, s.created_at,
+               (SELECT AVG(total_score) FROM wellbeing_assessments WHERE student_id = s.id) as avg_wellbeing
+        FROM students 
+        WHERE is_admin = 0
+        ORDER BY s.created_at DESC
+    ''').fetchall()
+    
+    students_data = []
+    for student in students:
+        student_dict = dict(student)
+        avg_wellbeing = student_dict.get('avg_wellbeing', 0)
+        
+        risk_level = 'Low'
+        if student_dict['gpa'] < 2.5:
+            risk_level = 'High'
+        elif student_dict['gpa'] < 3.0:
+            risk_level = 'Medium'
+        
+        student_dict['avg_wellbeing'] = round(avg_wellbeing, 1) if avg_wellbeing else 0
+        student_dict['risk_level'] = risk_level
+        students_data.append(student_dict)
+    
+    conn.close()
+    return jsonify(students_data)
+
+@app.route('/api/admin/students', methods=['POST'])
+def add_student():
+    if 'student_id' not in session or not session.get('is_admin'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    conn = get_db()
+    
+    try:
+        cursor = conn.execute('''
+            INSERT INTO students (email, password, first_name, last_name, educational_background, career_goal)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (data['email'], data['password'], data['first_name'], data['last_name'], 
+              data.get('educational_background', ''), data.get('career_goal', '')))
+        
+        student_id = cursor.lastrowid
+        
+        from generate_roadmap import generate_personalized_roadmap
+        generate_personalized_roadmap(student_id, data.get('career_goal', ''))
+        
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'student_id': student_id})
+    except Exception as e:
+        conn.close()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/admin/students/<int:student_id>', methods=['DELETE'])
+def delete_student(student_id):
+    if 'student_id' not in session or not session.get('is_admin'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    conn = get_db()
+    conn.execute('DELETE FROM students WHERE id = ? AND is_admin = 0', (student_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
+@app.route('/api/admin/courses', methods=['GET'])
+def get_all_courses():
+    if 'student_id' not in session or not session.get('is_admin'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    conn = get_db()
+    courses = conn.execute('''
+        SELECT * FROM courses ORDER BY course_code
+    ''').fetchall()
+    conn.close()
+    
+    return jsonify([dict(course) for course in courses])
+
+@app.route('/api/admin/courses', methods=['POST'])
+def add_course():
+    if 'student_id' not in session or not session.get('is_admin'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = request.json
+    conn = get_db()
+    
+    try:
+        conn.execute('''
+            INSERT INTO courses (course_code, course_name, credits, description, faculty_name, intake_term, semester)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', (data['course_code'], data['course_name'], data.get('credits', 3), 
+              data.get('description', ''), data.get('faculty_name', ''), 
+              data.get('intake_term', ''), data.get('semester', '')))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        conn.close()
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/admin/courses/<int:course_id>', methods=['DELETE'])
+def delete_course(course_id):
+    if 'student_id' not in session or not session.get('is_admin'):
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    conn = get_db()
+    conn.execute('DELETE FROM courses WHERE id = ?', (course_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
+
 @app.route('/dashboard')
 def dashboard():
     if 'student_id' not in session:
