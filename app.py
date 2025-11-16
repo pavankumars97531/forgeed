@@ -44,7 +44,12 @@ def login():
     if student:
         session['student_id'] = student['id']
         session['student_name'] = student['first_name']
-        return redirect(url_for('dashboard'))
+        session['is_admin'] = bool(student['is_admin'])
+        
+        if student['is_admin']:
+            return redirect(url_for('admin_dashboard'))
+        else:
+            return redirect(url_for('dashboard'))
     else:
         return render_template('login.html', error='Invalid credentials')
 
