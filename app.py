@@ -389,9 +389,9 @@ def generate_dashboard_insights(student_id, gpa, career_ready_percentage, wellbe
     """Generate personalized AI insights based on current scores"""
     if not client:
         return [
-            {"type": "success", "text": "Great progress! Keep up the excellent work on your career learning path."},
-            {"type": "warning", "text": "Consider taking a break to maintain your wellbeing balance."},
-            {"type": "info", "text": "You're on track to achieve your career goals. Stay consistent!"}
+            {"type": "academic", "text": f"Your {gpa:.2f} GPA shows strong academic performance. Keep it up!"},
+            {"type": "career", "text": f"You're {career_ready_percentage}% through your career roadmap. Stay consistent!"},
+            {"type": "wellbeing", "text": f"Wellbeing score of {wellbeing_score} is good. Remember to balance study and rest."}
         ]
     
     prompt = f"""Generate 3 brief, personalized insights for a student with these metrics:
@@ -399,10 +399,10 @@ def generate_dashboard_insights(student_id, gpa, career_ready_percentage, wellbe
 - Career Ready: {career_ready_percentage}% (90-day learning roadmap progress)
 - Recent Wellbeing Score: {wellbeing_score}/100
 
-Provide 3 specific, actionable insights based on these scores:
-1. One celebrating their strengths (type: success)
-2. One suggesting improvement areas (type: warning) 
-3. One with motivational advice (type: info)
+Provide 3 specific, actionable insights - one for each category:
+1. Academic insight about their GPA (type: "academic")
+2. Career insight about their roadmap progress (type: "career") 
+3. Wellbeing insight about their mental health score (type: "wellbeing")
 
 Format as JSON array of objects with 'type' and 'text' fields.
 Keep each insight under 120 characters."""
@@ -425,9 +425,9 @@ Keep each insight under 120 characters."""
         return json.loads(insights_json)
     except:
         return [
-            {"type": "success", "text": "Great progress! Your performance in Machine Learning has improved by 15% this month."},
-            {"type": "warning", "text": "You might need extra support in Statistical Methods. Consider scheduling a tutoring session."},
-            {"type": "info", "text": "Based on your interests, we recommend taking 'Deep Learning Fundamentals' next semester."}
+            {"type": "academic", "text": f"Your {gpa:.2f} GPA shows strong academic performance. Keep it up!"},
+            {"type": "career", "text": f"You're {career_ready_percentage}% through your career roadmap. Stay consistent!"},
+            {"type": "wellbeing", "text": f"Wellbeing score of {wellbeing_score} is good. Remember to balance study and rest."}
         ]
 
 def get_ai_course_recommendations(student_id):
