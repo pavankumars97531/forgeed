@@ -190,12 +190,12 @@
                 labels: perfData.subjects,
                 datasets: [
                     {
-                        label: 'Current Grade',
+                        label: 'Current GPA',
                         data: perfData.current,
                         backgroundColor: '#4A90E2'
                     },
                     {
-                        label: 'Predicted Grade',
+                        label: 'Predicted GPA',
                         data: perfData.predicted,
                         backgroundColor: '#50C878'
                     }
@@ -207,10 +207,12 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 100,
+                        min: 0,
+                        max: 4.0,
                         ticks: {
+                            stepSize: 0.5,
                             callback: function(value) {
-                                return value + '%';
+                                return value.toFixed(1);
                             }
                         }
                     }
@@ -219,6 +221,13 @@
                     legend: {
                         display: true,
                         position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(2);
+                            }
+                        }
                     }
                 }
             }

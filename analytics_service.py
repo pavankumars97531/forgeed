@@ -187,18 +187,23 @@ def get_gpa_history(student_id):
     values = []
     
     if monthly_scores:
-        for month in sorted(monthly_scores.keys()):
+        sorted_months = sorted(monthly_scores.keys())
+        current_month = date.today().strftime('%Y-%m')
+        
+        for month in sorted_months:
+            # Skip current month from quiz data - we'll use actual GPA
+            if month == current_month:
+                continue
+                
             avg_percentage = sum(monthly_scores[month]) / len(monthly_scores[month])
             # Convert percentage to GPA scale
             estimated_gpa = (avg_percentage / 100) * 4.0
             dates.append(month)
             values.append(round(estimated_gpa, 2))
         
-        # Add current month with current GPA
-        current_month = date.today().strftime('%Y-%m')
-        if not dates or dates[-1] != current_month:
-            dates.append(current_month)
-            values.append(current_gpa)
+        # ALWAYS add current month with actual current GPA from database
+        dates.append(current_month)
+        values.append(current_gpa)
     else:
         # No quiz data, show stable GPA
         for i in range(6):
