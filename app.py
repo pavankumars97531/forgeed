@@ -85,11 +85,8 @@ def get_all_students():
         student_dict = dict(student)
         avg_wellbeing = student_dict.get('avg_wellbeing', 0)
         
-        risk_level = 'Low'
-        if student_dict['gpa'] < 2.5:
-            risk_level = 'High'
-        elif student_dict['gpa'] < 3.0:
-            risk_level = 'Medium'
+        # Use the same risk level calculation as analytics page
+        risk_level = analytics_service.calculate_risk_level(student['id'])
         
         student_dict['avg_wellbeing'] = round(avg_wellbeing, 1) if avg_wellbeing else 0
         student_dict['risk_level'] = risk_level
