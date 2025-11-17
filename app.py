@@ -783,11 +783,21 @@ Keep it under 800 words."""
         theory_content = day_topic['theory_content']
     
     # Get external resource links
-    resources = day_topic['resources'] if day_topic['resources'] else json.dumps([
+    default_resources = [
         {"title": "MDN Web Docs", "url": "https://developer.mozilla.org"},
         {"title": "W3Schools", "url": "https://www.w3schools.com"},
         {"title": "FreeCodeCamp", "url": "https://www.freecodecamp.org"}
-    ])
+    ]
+    
+    if day_topic['resources']:
+        try:
+            resources = json.loads(day_topic['resources'])
+            if not resources:
+                resources = default_resources
+        except:
+            resources = default_resources
+    else:
+        resources = default_resources
     
     conn.close()
     
@@ -795,7 +805,7 @@ Keep it under 800 words."""
         'day_number': day_number,
         'topic': day_topic['topic'],
         'theory': theory_content,
-        'resources': json.loads(resources),
+        'resources': resources,
         'study_duration': day_topic['study_duration'],
         'is_completed': bool(day_topic['is_completed'])
     })
