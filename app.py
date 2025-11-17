@@ -25,6 +25,10 @@ analytics_service.set_openai_client(client)
 
 init_db()
 
+@app.route('/health')
+def health_check():
+    return jsonify({'status': 'healthy', 'service': 'ForgeEd LMS'}), 200
+
 @app.route('/')
 def index():
     if 'student_id' in session:
