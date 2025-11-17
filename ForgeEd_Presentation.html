@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForgeEd - System Presentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .slide {
+            background: white;
+            width: 90%;
+            max-width: 1200px;
+            height: 90vh;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 60px 80px;
+            display: none;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .slide.active {
+            display: flex;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .slide h1 {
+            font-size: 3.5em;
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .slide h2 {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 30px;
+            border-bottom: 4px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .slide h3 {
+            font-size: 1.8em;
+            color: #764ba2;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .slide p, .slide li {
+            font-size: 1.3em;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .slide ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .slide li {
+            padding-left: 40px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .slide li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-card h4 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 1.2em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-prev {
+            background: #764ba2;
+            color: white;
+        }
+
+        .btn-next {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .slide-number {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            font-size: 1.2em;
+            color: #999;
+        }
+
+        .screenshot-placeholder {
+            background: #f0f0f0;
+            border: 3px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            padding: 3px 10px;
+            border-radius: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .demo-box {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+
+        .color-code {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-right: 10px;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <h1>🎓 ForgeEd</h1>
+            <h2 style="text-align: center; border: none; font-size: 2em; color: #764ba2;">
+                AI-Enhanced Learning Management System
+            </h2>
+            <p style="text-align: center; font-size: 1.5em; margin-top: 40px;">
+                For Saint Louis University MS in Information Systems Students
+            </p>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">9</div>
+                    <div class="stat-label">Core Features</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">90</div>
+                    <div class="stat-label">Day Roadmap</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">AI Support</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">AI-Powered</div>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 60px; font-size: 1.3em; color: #666;">
+                Presented by: Ullas Gowda<br>
+                Saint Louis University
+            </p>
+            <div class="slide-number">1 / 12</div>
+        </div>
+
+        <!-- Slide 2: Problem Statement -->
+        <div class="slide">
+            <h2>❌ Problem Statement</h2>
+            <h3>Challenges in Traditional Learning Management</h3>
+            <ul>
+                <li><strong>Generic Learning Paths:</strong> One-size-fits-all approach doesn't match individual career goals</li>
+                <li><strong>Limited Personalization:</strong> No AI-driven insights or recommendations</li>
+                <li><strong>Mental Health Overlooked:</strong> Student wellbeing often ignored in academic systems</li>
+                <li><strong>Delayed Feedback:</strong> Manual grading takes days, slowing learning progress</li>
+                <li><strong>No Predictive Analytics:</strong> Can't identify at-risk students early</li>
+                <li><strong>Fragmented Experience:</strong> Separate tools for courses, quizzes, and support</li>
+            </ul>
+            <div class="demo-box">
+                <strong>Impact:</strong> Students lack personalized guidance, struggle without timely feedback, 
+                and mental health issues go undetected until it's too late.
+            </div>
+            <div class="slide-number">2 / 12</div>
+        </div>
+
+        <!-- Slide 3: Solution Overview -->
+        <div class="slide">
+            <h2>✅ ForgeEd Solution</h2>
+            <h3>AI-Enhanced Comprehensive Learning Platform</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🎯 Personalized Learning</h4>
+                    <p>90-day AI-generated roadmap tailored to career goals with day-locking progression</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🤖 Intelligent Assessment</h4>
+                    <p>Dual quiz system with AI auto-grading and personalized feedback</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💚 Wellbeing Tracking</h4>
+                    <p>Daily mental health check-ins with AI-generated motivational insights</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Predictive Analytics</h4>
+                    <p>Risk assessment and performance trends with Chart.js visualizations</p>
+                </div>
+            </div>
+            <p style="margin-top: 40px; text-align: center; font-size: 1.4em;">
+                <span class="highlight">One Unified Platform</span> combining academics, career development, 
+                and mental health support powered by <strong>OpenAI GPT</strong>
+            </p>
+            <div class="slide-number">3 / 12</div>
+        </div>
+
+        <!-- Slide 4: User Interaction - Login -->
+        <div class="slide">
+            <h2>🔐 1. Login & Authentication</h2>
+            <div class="screenshot-placeholder">
+                📸 Login Page Screenshot<br>
+                (View in browser: http://localhost:5000/)
+            </div>
+            <h3>Key Interactions:</h3>
+            <ul>
+                <li><strong>① University Email Field:</strong> Enter SLU email address</li>
+                <li><strong>② Password Field:</strong> Secure password entry</li>
+                <li><strong>③ Sign In Button:</strong> Click to authenticate</li>
+                <li><strong>④ Auto-Redirect:</strong> Students → Dashboard, Admins → Admin Panel</li>
+            </ul>
+            <div class="demo-box">
+                <strong>Demo Credentials:</strong><br>
+                Student: ullasgowda@slu.edu / password123<br>
+                Admin: admin@edu / Password@123
+            </div>
+            <div class="slide-number">4 / 12</div>
+        </div>
+
+        <!-- Slide 5: Dashboard -->
+        <div class="slide">
+            <h2>📊 2. Student Dashboard</h2>
+            <h3>Interactive Performance Overview</h3>
+            <div class="feature-grid">
+                <div class="feature-card" style="background: #2196F3;">
+                    <h4>Academic Metrics</h4>
+                    <p>GPA tracking, course completion percentage, academic quiz scores</p>
+                </div>
+                <div class="feature-card" style="background: #9b7fd7;">
+                    <h4>Career Metrics</h4>
+                    <p>Career quiz performance, roadmap progress, learning trends</p>
+                </div>
+                <div class="feature-card" style="background: #f4a261;">
+                    <h4>Wellbeing Metrics</h4>
+                    <p>Daily mental health scores, stress levels, energy tracking</p>
+                </div>
+                <div class="feature-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h4>AI Insights</h4>
+                    <p>Personalized recommendations, performance analysis, next steps</p>
+                </div>
+            </div>
+            <h3 style="margin-top: 30px;">Color-Coded Design System:</h3>
+            <p>
+                <span class="color-code" style="background: #2196F3;"></span><strong>Blue:</strong> Academic/GPA metrics<br>
+                <span class="color-code" style="background: #9b7fd7;"></span><strong>Purple:</strong> Career learning metrics<br>
+                <span class="color-code" style="background: #f4a261;"></span><strong>Orange:</strong> Wellbeing metrics
+            </p>
+            <div class="slide-number">5 / 12</div>
+        </div>
+
+        <!-- Slide 6: Career Learning -->
+        <div class="slide">
+            <h2>🎯 3. Career Learning Roadmap</h2>
+            <h3>90-Day Personalized Learning Path</h3>
+            <ul>
+                <li><strong>① Select Day:</strong> Click on any unlocked day card (left panel)</li>
+                <li><strong>② View Content:</strong> AI-generated theory content appears (right panel)</li>
+                <li><strong>③ External Resources:</strong> Click 📚 links (MDN, W3Schools, FreeCodeCamp)</li>
+                <li><strong>④ Take Quiz:</strong> Navigate to Quizzes → Career Quiz</li>
+                <li><strong>⑤ Auto-Complete:</strong> Submitting quiz marks day as complete ✅</li>
+            </ul>
+            <div class="demo-box">
+                <strong>Day-Locking System:</strong><br>
+                🟢 Past days: Accessible for review<br>
+                📍 Current day: Today's learning topic (unlocked)<br>
+                🔒 Future days: Locked until you complete current day
+            </div>
+            <p><strong>Interaction Flow:</strong> Click day → Read theory → Click external links → Take quiz → Next day unlocks</p>
+            <div class="slide-number">6 / 12</div>
+        </div>
+
+        <!-- Slide 7: Quiz System -->
+        <div class="slide">
+            <h2>✍️ 4. Dual Quiz System</h2>
+            <h3>Two Types of Assessment</h3>
+            <div class="feature-grid">
+                <div class="feature-card" style="background: #9b7fd7;">
+                    <h4>Career Learning Quiz</h4>
+                    <p><strong>10 questions</strong> on current day's roadmap topic</p>
+                    <p>✅ Auto-completes roadmap day</p>
+                    <p>🤖 AI-powered feedback</p>
+                </div>
+                <div class="feature-card" style="background: #2196F3;">
+                    <h4>Academic Quiz</h4>
+                    <p><strong>15 questions</strong> from 3 enrolled courses</p>
+                    <p>📚 Comprehensive assessment</p>
+                    <p>🤖 Personalized insights</p>
+                </div>
+            </div>
+            <h3>User Interaction Steps:</h3>
+            <ul>
+                <li><strong>① Click "Start Quiz":</strong> AI generates questions in real-time</li>
+                <li><strong>② Answer Questions:</strong> Select from 4 options (A, B, C, D)</li>
+                <li><strong>③ Submit Quiz:</strong> Click submit on final question</li>
+                <li><strong>④ View Results:</strong> See score, percentage, and AI feedback</li>
+                <li><strong>⑤ Review Answers:</strong> See correct answers with explanations</li>
+            </ul>
+            <div class="slide-number">7 / 12</div>
+        </div>
+
+        <!-- Slide 8: Wellbeing -->
+        <div class="slide">
+            <h2>💚 5. Wellbeing Assessment</h2>
+            <h3>Daily Mental Health Check-in</h3>
+            <p><strong>Five Interactive Emoji Sliders (1-100 scale):</strong></p>
+            <ul>
+                <li><strong>😊 Happiness:</strong> Drag emoji to rate current happiness level</li>
+                <li><strong>😰 Stress:</strong> Indicate stress level (lower is better)</li>
+                <li><strong>⚡ Energy:</strong> Rate your energy and vitality</li>
+                <li><strong>🎯 Motivation:</strong> How motivated do you feel today?</li>
+                <li><strong>😴 Sleep Quality:</strong> Rate last night's sleep quality</li>
+            </ul>
+            <div class="demo-box">
+                <strong>Scoring Formula:</strong><br>
+                Total Score = (Happiness + (100 - Stress) + Energy + Motivation + Sleep) / 5<br><br>
+                <strong>Example:</strong> Happiness 80 + Stress 30→70 + Energy 75 + Motivation 85 + Sleep 80 = 78/100
+            </div>
+            <p><strong>After Submission:</strong> Receive AI-generated motivational insights and personalized wellbeing recommendations</p>
+            <div class="slide-number">8 / 12</div>
+        </div>
+
+        <!-- Slide 9: Analytics -->
+        <div class="slide">
+            <h2>📈 6. Performance Analytics</h2>
+            <h3>Data-Driven Insights with Chart.js</h3>
+            <div class="feature-grid">
+                <div class="feature-card" style="background: #9b7fd7;">
+                    <h4>Career Quiz Graph</h4>
+                    <p>Purple line chart showing daily scores over 30 days</p>
+                </div>
+                <div class="feature-card" style="background: #2196F3;">
+                    <h4>Academic Quiz Graph</h4>
+                    <p>Blue line chart tracking course assessment performance</p>
+                </div>
+                <div class="feature-card" style="background: #f4a261;">
+                    <h4>Wellbeing Trend Graph</h4>
+                    <p>Orange line chart showing mental health patterns</p>
+                </div>
+                <div class="feature-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h4>Risk Assessment</h4>
+                    <p>🟢 Low ≥80% | 🟡 Medium 50-79% | 🔴 High <50%</p>
+                </div>
+            </div>
+            <h3>Interaction:</h3>
+            <p><strong>① Hover over graph points:</strong> See exact scores and dates<br>
+            <strong>② Identify trends:</strong> Spot performance patterns<br>
+            <strong>③ Check risk level:</strong> Understand overall academic standing</p>
+            <div class="slide-number">9 / 12</div>
+        </div>
+
+        <!-- Slide 10: SLU GPT -->
+        <div class="slide">
+            <h2>🤖 7. SLU GPT Chat Assistant</h2>
+            <h3>24/7 Personalized AI Tutoring</h3>
+            <ul>
+                <li><strong>① Type Question:</strong> Enter any academic question or request</li>
+                <li><strong>② Send Message:</strong> Click send button or press Enter</li>
+                <li><strong>③ Receive Response:</strong> Get formatted AI answer with rich text</li>
+                <li><strong>④ Continue Conversation:</strong> Ask follow-up questions</li>
+            </ul>
+            <div class="demo-box">
+                <strong>Rich Text Formatting:</strong><br>
+                • <strong>Bold text</strong> for emphasis<br>
+                • ### Headers for sections<br>
+                • Bullet and numbered lists<br>
+                • `Code snippets` with syntax highlighting<br>
+                • Code blocks for programming examples
+            </div>
+            <h3>Context-Aware Features:</h3>
+            <p>✓ Knows your enrolled courses<br>
+            ✓ Understands your career goals<br>
+            ✓ Provides SLU-specific guidance<br>
+            ✓ Saves conversation history</p>
+            <div class="slide-number">10 / 12</div>
+        </div>
+
+        <!-- Slide 11: Admin Dashboard -->
+        <div class="slide">
+            <h2>👥 8. Admin Dashboard</h2>
+            <h3>Comprehensive Student & Course Management</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Manage Students</h4>
+                    <p><strong>Add:</strong> Fill form → Click "Add Student" → Auto-generates 90-day roadmap<br>
+                    <strong>Delete:</strong> Click red delete button → Confirm → Cascade removal</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Manage Courses</h4>
+                    <p><strong>Add:</strong> Enter course details → Click "Add Course" → Available for AI recommendations<br>
+                    <strong>Delete:</strong> Remove from catalog → Updates recommendations</p>
+                </div>
+            </div>
+            <h3>Student Monitoring Table:</h3>
+            <ul>
+                <li><strong>① View All Students:</strong> See GPA, wellbeing, risk level</li>
+                <li><strong>② Sort by Columns:</strong> Click headers to sort by any metric</li>
+                <li><strong>③ Identify At-Risk:</strong> Red 🔴 indicators show high-risk students</li>
+                <li><strong>④ Plan Interventions:</strong> Use data for academic support</li>
+            </ul>
+            <div class="slide-number">11 / 12</div>
+        </div>
+
+        <!-- Slide 12: Technical Architecture -->
+        <div class="slide">
+            <h2>⚙️ Technical Architecture</h2>
+            <div class="feature-grid">
+                <div class="feature-card" style="background: #2196F3;">
+                    <h4>Backend</h4>
+                    <p>• Python + Flask framework<br>
+                    • SQLite database (7 tables)<br>
+                    • RESTful API design<br>
+                    • Session-based auth</p>
+                </div>
+                <div class="feature-card" style="background: #9b7fd7;">
+                    <h4>Frontend</h4>
+                    <p>• HTML5 + CSS3<br>
+                    • Vanilla JavaScript<br>
+                    • Chart.js visualizations<br>
+                    • Responsive design</p>
+                </div>
+                <div class="feature-card" style="background: #f4a261;">
+                    <h4>AI Integration</h4>
+                    <p>• OpenAI GPT-4 API<br>
+                    • Real-time generation<br>
+                    • Context-aware responses<br>
+                    • Auto-grading system</p>
+                </div>
+                <div class="feature-card" style="background: #27ae60;">
+                    <h4>Deployment</h4>
+                    <p>• Gunicorn WSGI server<br>
+                    • Autoscale deployment<br>
+                    • Health check endpoint<br>
+                    • ~$1.10/month for 1hr/day</p>
+                </div>
+            </div>
+            <h3 style="margin-top: 30px;">Key Benefits:</h3>
+            <p>✓ Personalized learning paths<br>
+            ✓ Instant AI feedback<br>
+            ✓ Mental health support<br>
+            ✓ Early risk detection<br>
+            ✓ Data-driven decisions</p>
+            <div class="slide-number">12 / 12</div>
+        </div>
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="controls">
+        <button class="btn btn-prev" onclick="prevSlide()">← Previous</button>
+        <button class="btn btn-next" onclick="nextSlide()">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            // Update button states
+            document.querySelector('.btn-prev').disabled = currentSlide === 0;
+            document.querySelector('.btn-next').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>
