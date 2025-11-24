@@ -340,6 +340,36 @@ def slu_gpt():
                          student=student,
                          chat_history=list(reversed(chat_history)))
 
+@app.route('/profile')
+def profile():
+    if 'student_id' not in session:
+        return redirect(url_for('index'))
+    
+    student_id = session['student_id']
+    conn = get_db()
+    student = conn.execute('SELECT * FROM students WHERE id = ?', (student_id,)).fetchone()
+    conn.close()
+    
+    return render_template('profile.html', student=student)
+
+@app.route('/api/enrolled-courses')
+def get_enrolled_courses():
+    if 'student_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    student_id = session['student_id']
+    conn = get_db()
+    courses = conn.execute('''
+        SELECT c.*, ec.progress, ec.grade, ec.modules_completed, ec.pending_assignments, ec.enrolled_at
+        FROM enrolled_courses ec
+        JOIN courses c ON ec.course_id = c.id
+        WHERE ec.student_id = ?
+        ORDER BY ec.enrolled_at DESC
+    ''', (student_id,)).fetchall()
+    conn.close()
+    
+    return jsonify([dict(course) for course in courses])
+
 @app.route('/api/chat', methods=['POST'])
 def chat():
     if 'student_id' not in session:

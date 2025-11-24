@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - ForgeEd</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-logo">
+                <h2>ForgeEd</h2>
+                <p>AI-Enhanced LMS</p>
+            </div>
+            
+            <div class="sidebar-nav">
+                <a href="/dashboard" class="nav-item">
+                    Dashboard
+                </a>
+                <a href="/courses" class="nav-item">
+                    My Courses
+                </a>
+                <a href="/career-learning" class="nav-item">
+                    Career Learning
+                </a>
+                <a href="/quiz" class="nav-item">
+                    Quizzes
+                </a>
+                <a href="/wellbeing" class="nav-item">
+                    Wellbeing
+                </a>
+                <a href="/analytics" class="nav-item">
+                    Student Analytics
+                </a>
+                <a href="/slu-gpt" class="nav-item">
+                    SLU GPT
+                </a>
+                <a href="/profile" class="nav-item active">
+                    Profile
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <a href="/logout" class="logout-btn">
+                    Logout
+                </a>
+            </div>
+        </nav>
+        
+        <main class="main-content">
+            <div class="welcome-banner">
+                <h2>My Profile</h2>
+                <p>Manage your account and academic information</p>
+            </div>
+            
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    {{ student['first_name'][0] }}{{ student['last_name'][0] }}
+                </div>
+                <div class="profile-info">
+                    <h3>{{ student['first_name'] }} {{ student['last_name'] }}</h3>
+                    <p>Master's Student</p>
+                    <p class="profile-email">{{ student['email'] }}</p>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <div class="stat-value">{{ "%.2f"|format(student['gpa']) }}</div>
+                        <div class="stat-label">Current GPA</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">{{ student['completion_rate'] }}%</div>
+                        <div class="stat-label">Completion</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="profile-tabs">
+                <button class="tab-button active" data-tab="settings">Settings</button>
+                <button class="tab-button" data-tab="academic">Academic History</button>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content active">
+                <div class="settings-section">
+                    <h4>Account Information</h4>
+                    <div class="settings-group">
+                        <div class="setting-item">
+                            <label>Full Name</label>
+                            <input type="text" value="{{ student['first_name'] }} {{ student['last_name'] }}" disabled>
+                        </div>
+                        <div class="setting-item">
+                            <label>Email Address</label>
+                            <input type="email" value="{{ student['email'] }}" disabled>
+                        </div>
+                        <div class="setting-item">
+                            <label>Phone Number</label>
+                            <input type="tel" value="+1 (555) 123-4567" disabled>
+                        </div>
+                    </div>
+                    <button class="btn-action">Edit Profile</button>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>Notification Preferences</h4>
+                    <div class="preference-list">
+                        <div class="preference-item">
+                            <div>
+                                <label>Assignment Reminders</label>
+                                <p>Get notified about upcoming assignments</p>
+                            </div>
+                            <input type="checkbox" checked>
+                        </div>
+                        <div class="preference-item">
+                            <div>
+                                <label>Grade Updates</label>
+                                <p>Receive notifications when grades are posted</p>
+                            </div>
+                            <input type="checkbox" checked>
+                        </div>
+                        <div class="preference-item">
+                            <div>
+                                <label>AI Insights</label>
+                                <p>Get personalized learning recommendations</p>
+                            </div>
+                            <input type="checkbox" checked>
+                        </div>
+                        <div class="preference-item">
+                            <div>
+                                <label>Course Announcements</label>
+                                <p>Important course updates and announcements</p>
+                            </div>
+                            <input type="checkbox" checked>
+                        </div>
+                        <div class="preference-item">
+                            <div>
+                                <label>Weekly Progress Reports</label>
+                                <p>Summary of your weekly learning progress</p>
+                            </div>
+                            <input type="checkbox">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h4>AI Preferences</h4>
+                    <div class="preference-list">
+                        <div class="preference-item">
+                            <div>
+                                <label>Enable SLU GPT Suggestions</label>
+                                <p>Allow AI to provide learning suggestions</p>
+                            </div>
+                            <input type="checkbox" checked>
+                        </div>
+                        <div class="preference-item">
+                            <div>
+                                <label>Predictive Analytics</label>
+                                <p>Use AI to predict and improve performance</p>
+                            </div>
+                            <input type="checkbox" checked>
+                        </div>
+                        <div class="preference-item">
+                            <div>
+                                <label>Personalized Recommendations</label>
+                                <p>Receive course and career path recommendations</p>
+                            </div>
+                            <input type="checkbox" checked>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Academic History Tab -->
+            <div id="academic" class="tab-content">
+                <div class="academic-section">
+                    <h4>Academic History</h4>
+                    <div class="academic-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Semester</th>
+                                    <th>Status</th>
+                                    <th>GPA</th>
+                                    <th>Credits</th>
+                                    <th>Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody id="academic-history">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="academic-section">
+                    <h4>Overall Statistics</h4>
+                    <div class="stats-grid academic-stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Cumulative GPA</div>
+                            <div class="stat-value">{{ "%.2f"|format(student['gpa']) }}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Credits</div>
+                            <div class="stat-value" id="total-credits">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Semesters</div>
+                            <div class="stat-value" id="total-semesters">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Completion</div>
+                            <div class="stat-value">{{ student['completion_rate'] }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.getAttribute('data-tab');
+                
+                // Update buttons
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Update content
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById(tab).classList.add('active');
+            });
+        });
+        
+        // Load academic history from enrolled courses
+        fetch('/api/enrolled-courses')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('academic-history');
+                let totalCredits = 0;
+                let semesters = new Set();
+                
+                data.forEach(course => {
+                    const row = document.createElement('tr');
+                    const sem = course.semester || 1;
+                    semesters.add(sem);
+                    totalCredits += course.credits || 3;
+                    
+                    row.innerHTML = `
+                        <td>${['Fall 2024', 'Spring 2025', 'Summer 2025'][sem-1] || 'Fall 2024'}</td>
+                        <td><span class="status-badge completed">Completed</span></td>
+                        <td>${course.gpa || '3.85'}</td>
+                        <td>${course.credits || 3}</td>
+                        <td><span class="grade-badge">${course.grade || 'A'}</span></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                document.getElementById('total-credits').textContent = totalCredits;
+                document.getElementById('total-semesters').textContent = semesters.size;
+            })
+            .catch(err => console.log('Note: Academic data not yet available'));
+    </script>
+</body>
+</html>
