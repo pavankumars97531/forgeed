@@ -3,7 +3,7 @@
 <img width="1024" height="1024" alt="Gemini_Generated_Image_dzw2skdzw2skdzw2" src="https://github.com/user-attachments/assets/1cc4d446-1976-4eec-a922-c31760cea3c2" />
 
 
-**An AI-powered Learning Management System built with Flask and OpenAI GPT integration, designed for Saint Louis University's MS in Information Systems students.**
+**An AI-powered Learning Management System built for Universities.**
 
 ---
 
@@ -37,8 +37,6 @@
 - Ruthvik Ajit Chiniwal
 - Harshith Shivaswamy
 
-**Institution:** Saint Louis University - MS in Information Systems Program
-
 **Live URL:** https://forgeed.replit.app/
 
 **GitHub Repository:** https://github.com/pavankumars97531/forgeed
@@ -55,7 +53,7 @@ This fragmentation results in:
 - Disconnected mental health support
 - Limited career preparedness
 
-To address this systemic problem, our team developed **ForgeEd**, an AI-enhanced Learning Management System specifically designed for Saint Louis University. ForgeEd integrates traditional LMS capabilities with advanced GenAI features, including:
+To address this systemic problem, our team developed **ForgeEd**, an AI-enhanced Learning Management System specifically designed for Universities. ForgeEd integrates traditional LMS capabilities with advanced GenAI features, including:
 
 ✅ **Personalized Tutoring** (SLU GPT) - 24/7 AI academic support  
 ✅ **AI-Generated Learning Pathways** - 90-day career learning roadmaps  
@@ -71,7 +69,7 @@ To address this systemic problem, our team developed **ForgeEd**, an AI-enhanced
 ## 🔍 Problem Context & Stakeholders
 
 ### The Challenge
-Higher education is undergoing significant transformation as universities attempt to integrate emerging GenAI technologies into traditional academic structures. Despite rapid innovation across learning platforms, most institutions—including Saint Louis University—continue to rely on fragmented systems that separately manage courses, wellbeing services, and career support.
+Higher education is undergoing significant transformation as universities attempt to integrate emerging GenAI technologies into traditional academic structures. Despite rapid innovation across learning platforms, most universities rely on fragmented systems that separately manage courses, wellbeing services, and career support.
 
 **Core Problem:** Students do not receive integrated, timely, and personalized support across academics, wellbeing, and career development, leading to:
 - Irregular academic performance
@@ -720,9 +718,6 @@ Student risk levels are calculated based on quiz performance:
 - Ifenthaler, D., & Yau, J. M. K. (2020). Utilising learning analytics to support study success. *Journal of Learning Analytics*, 7(3), 1-4.
 - Artificial Intelligence in Education: A Review (2020)
 
-**Contact:**
-- **Institution:** Saint Louis University
-- **Program:** MS in Information Systems
 - **Project Website:** https://forgeed.replit.app/
 
 ---
@@ -747,10 +742,8 @@ https://github.com/user-attachments/assets/5b7d7be6-07ec-416b-94dd-9489c717d596
 
 
 
-**Built with ❤️ by MRP Team 1 @ Saint Louis University**
-
 **Last Updated:** November 2025
 
-For questions or issues, please reach out through the GitHub repository or Saint Louis University's MS in Information Systems program.
+For questions or issues, please reach out through the GitHub repository.
 
 
