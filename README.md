@@ -1,6 +1,7 @@
 # 🎓 ForgeEd - AI-Enhanced Learning Management System
 
-![ForgeEd Logo](https://forgeed.replit.app/static/logo.png)
+<img width="1024" height="1024" alt="Gemini_Generated_Image_dzw2skdzw2skdzw2" src="https://github.com/user-attachments/assets/1cc4d446-1976-4eec-a922-c31760cea3c2" />
+
 
 **An AI-powered Learning Management System built with Flask and OpenAI GPT integration, designed for Saint Louis University's MS in Information Systems students.**
 
