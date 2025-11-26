@@ -45,7 +45,7 @@
 
 ## 📊 Executive Summary
 
-The rapid evolution of Generative AI is reshaping expectations in higher education, yet most university systems remain fragmented—separating academics, wellbeing, and career development into disconnected platforms. Through our Master's Research Project, Team Forge examined this critical gap and identified the core challenge: **students lack a unified, personalized support system that can guide them academically, emotionally, and professionally.**
+The rapid evolution of Generative AI is reshaping expectations in higher education, yet most university systems remain fragmented—separating academics, wellbeing, and career development into disconnected platforms. Through this Project, Team Forge examined this critical gap and identified the core challenge: **students lack a unified, personalized support system that can guide them academically, emotionally, and professionally.**
 
 This fragmentation results in:
 - Inconsistent academic performance
