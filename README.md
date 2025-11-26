@@ -700,12 +700,6 @@ Student risk levels are calculated based on quiz performance:
 
 ---
 
-## 📄 License
-
-MIT License - See LICENSE file for details
-
----
-
 ## 📞 Appendix
 
 ### Additional Resources
