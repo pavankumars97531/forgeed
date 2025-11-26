@@ -30,7 +30,7 @@
 
 **Project Title:** ForgeEd - AI-Enhanced Learning Management System
 
-**Team Members (MRP Team 1):**
+**Team ForgeEd:**
 - Ullas Giddegowda Gowda
 - Pavan Kumar Suresh
 - Pranay Reddy Shashidhar Reddy
