@@ -40,7 +40,7 @@
 
 **Live URL:** https://forgeed.replit.app/
 
-**GitHub Repository:** [ForgeEd Repository]
+**GitHub Repository:** https://github.com/pavankumars97531/forgeed
 
 ---
 
@@ -180,7 +180,7 @@ ForgeEd is a unified, AI-enhanced Learning Management System designed to support
 
 **Sponsor:** Saint Louis University
 
-**Duration:** 12-Week Master's Research Project
+**Duration:** 16-Week Master's Research Project
 
 **Budget:** Development Only (Academic Project)
 
@@ -212,117 +212,44 @@ ForgeEd is a unified, AI-enhanced Learning Management System designed to support
 
 ### Enterprise Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    User Interface Layer                       │
-│  (HTML/CSS/JS Frontend - Dashboard, Quiz, Chat, Analytics)   │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────────────┐
-│              Flask Application Layer                          │
-│  (Routes, Session Management, Business Logic)                │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-        ┌────────────┴────────────┐
-        │                         │
-┌───────▼──────────┐    ┌────────▼──────────┐
-│  Data Layer      │    │  AI Integration   │
-│  (SQLite DB)     │    │  (OpenAI API)     │
-│                  │    │                   │
-│ • Students       │    │ • SLU GPT Chat    │
-│ • Courses        │    │ • Content Gen     │
-│ • Quizzes        │    │ • Scoring         │
-│ • Wellbeing      │    │ • Insights        │
-│ • Analytics      │    │ • Recommendations │
-└──────────────────┘    └───────────────────┘
-```
+![Enterprise Architecture Diagram](https://raw.githubusercontent.com/pavankumars97531/forgeed/main/docs/business_architecture.png)
+
+The ForgeEd system is organized across three architectural layers:
+
+**Presentation Layer (User Interface)**
+- Student-facing portal with dashboard, quizzes, career learning, and chat
+- Admin management interface for student and course administration
+
+**Application Layer (Business Logic)**
+- Flask MVC web application handling all routes and business logic
+- Core modules: SLU GPT AI assistant, 90-day roadmap generator, quiz engine, predictive analytics, and recommendation engine
+- Dynamic data integration with SQLite database
+
+**Data & Integration Layer**
+- SQLite database with 8 core tables (Students, Courses, Enrolled Courses, Daily Roadmap, Career/Academic Quiz History, Wellbeing Assessments)
+- OpenAI API integration for intelligent content generation, scoring, and insights
+- Real-time data flow supporting live GPA tracking, quiz performance, wellbeing scores, and course progress
 
 ### Database Schema (ER Diagram)
 
-```
-STUDENTS
-├─ student_id (PK)
-├─ first_name
-├─ last_name
-├─ email (UNIQUE)
-├─ password
-├─ gpa
-├─ completion_rate
-├─ career_goal
-├─ educational_background
-├─ is_admin
-└─ slu_gpt_sessions
+![Database ER Diagram](https://raw.githubusercontent.com/pavankumars97531/forgeed/main/docs/er_diagram.png)
 
-COURSES
-├─ course_id (PK)
-├─ course_code
-├─ course_name
-├─ description
-├─ credits
-├─ faculty_name
-└─ intake_term
+**Core Data Entities:**
 
-ENROLLED_COURSES (Student ↔ Course)
-├─ enrollment_id (PK)
-├─ student_id (FK)
-├─ course_id (FK)
-├─ progress
-├─ grade
-├─ modules_completed
-└─ pending_assignments
+- **STUDENTS**: User profiles with credentials, academic metrics (GPA, completion rate), career goals, and background
+- **COURSES**: Course catalog with codes, names, faculty information, and intake terms
+- **ENROLLED_COURSES**: Junction table tracking student course enrollment, progress, grades, and modules completed
+- **DAILY_ROADMAP**: 90-day personalized career learning path with day-locked topics, theory content, and resources
+- **CAREER_QUIZ_HISTORY**: Historical records of Career Learning Quiz attempts with scores, answers, and AI feedback
+- **ACADEMIC_QUIZ_HISTORY**: Historical records of Academic Quiz attempts linked to courses with performance data
+- **WELLBEING_ASSESSMENTS**: Daily wellbeing check-ins tracking happiness, stress, energy, motivation, sleep quality, and AI-generated insights
+- **SLU_GPT_CHAT_HISTORY**: Chat conversation history maintaining context for personalized AI tutoring interactions
 
-DAILY_ROADMAP (Student's Career Path)
-├─ roadmap_id (PK)
-├─ student_id (FK)
-├─ day_number
-├─ topic
-├─ theory_content
-├─ resources
-├─ is_completed
-└─ study_duration
-
-CAREER_QUIZ_HISTORY
-├─ quiz_id (PK)
-├─ student_id (FK)
-├─ date_taken
-├─ score
-├─ total_questions
-├─ questions
-├─ answers
-└─ ai_feedback
-
-ACADEMIC_QUIZ_HISTORY
-├─ quiz_id (PK)
-├─ student_id (FK)
-├─ date_taken
-├─ score
-├─ total_questions
-├─ course_id (FK)
-├─ questions
-├─ answers
-└─ ai_feedback
-
-WELLBEING_ASSESSMENTS
-├─ assessment_id (PK)
-├─ student_id (FK)
-├─ date_assessed
-├─ happiness (1-100)
-├─ stress (1-100)
-├─ energy (1-100)
-├─ motivation (1-100)
-├─ sleep_quality (1-100)
-├─ total_score (1-100)
-├─ feelings_description
-├─ challenges_description
-└─ ai_insights
-
-SLU_GPT_CHAT_HISTORY
-├─ chat_id (PK)
-├─ student_id (FK)
-├─ message
-├─ response
-└─ created_at
-```
+**Relationships:**
+- Students have many Enrolled Courses and Daily Roadmaps (1:N)
+- Students have many Quiz History records and Wellbeing Assessments (1:N)
+- Courses have many Enrolled Students (1:N)
+- All entities connect to create a unified student profile with integrated academic, career, and wellbeing data
 
 ### Data Flow
 
