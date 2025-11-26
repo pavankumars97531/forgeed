@@ -210,9 +210,12 @@ ForgeEd is a unified, AI-enhanced Learning Management System designed to support
 
 ## 🏗️ Architecture & Data Design
 
-### Enterprise Architecture Diagram
 
-![Enterprise Architecture Diagram](https://raw.githubusercontent.com/pavankumars97531/forgeed/main/docs/business_architecture.png)
+# Enterprise Architecture Diagram
+
+##<img width="577" height="735" alt="Screenshot 2025-11-25 at 10 37 50 PM" src="https://github.com/user-attachments/assets/ba9e348c-44b8-4630-a39a-b5e5a25290a4" />
+
+
 
 The ForgeEd system is organized across three architectural layers:
 
@@ -232,7 +235,8 @@ The ForgeEd system is organized across three architectural layers:
 
 ### Database Schema (ER Diagram)
 
-![Database ER Diagram](https://raw.githubusercontent.com/pavankumars97531/forgeed/main/docs/er_diagram.png)
+<img width="2259" height="1476" alt="mermaid-diagram-2025-11-23-200303" src="https://github.com/user-attachments/assets/a6870c27-84de-4c50-a4a5-00e0a47feba7" />
+
 
 **Core Data Entities:**
 
@@ -740,8 +744,18 @@ MIT License - See LICENSE file for details
 
 ---
 
+Dashboard working demo:
+
+
+
+https://github.com/user-attachments/assets/5b7d7be6-07ec-416b-94dd-9489c717d596
+
+
+
 **Built with ❤️ by MRP Team 1 @ Saint Louis University**
 
 **Last Updated:** November 2025
 
 For questions or issues, please reach out through the GitHub repository or Saint Louis University's MS in Information Systems program.
+
+
